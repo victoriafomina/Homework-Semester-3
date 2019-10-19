@@ -1,18 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
 namespace Lazy
 {
     public class LazyThreadSafe<T> : ILazy<T>
     {
+        /// <summary>
+        /// Implements ILazy interface. Lets make thread-safe late initialization.
+        /// </summary>
         public LazyThreadSafe(Func<T> supplier)
         {
             Volatile.Write(ref isCalculated, false);
             this.supplier = supplier;
         }
 
+        /// <returns>value of the Lazy object</returns>
         public T Get()
         {  
             if (!Volatile.Read(ref isCalculated))

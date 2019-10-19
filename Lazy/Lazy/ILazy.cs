@@ -3,10 +3,11 @@
 namespace Lazy
 {
     /// <summary>
-    /// ILazy interface. Lets implement late initialization.
+    /// ILazy interface. Implements late initialization.
     /// </summary>
     public interface ILazy<T>
     {
+        /// <returns>value of the object</returns>
         T Get();
     }
 }
