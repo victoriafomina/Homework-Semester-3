@@ -12,7 +12,7 @@ namespace Lazy
             return new Lazy<T>(supplier);
         }
 
-        public static LazyThreadSafe<T> CreateThreadSafe(Func<T> supplier, T value)
+        public static LazyThreadSafe<T> CreateThreadSafe(Func<T> supplier)
         {
             return new LazyThreadSafe<T>(supplier);
         }
