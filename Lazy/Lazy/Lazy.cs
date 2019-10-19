@@ -16,7 +16,12 @@ namespace Lazy
 
         public T Get()
         {
-            
+            if (!isCalculated)
+            {
+                value = supplier();
+            }
+
+            return value;
         }
 
         private T value;
