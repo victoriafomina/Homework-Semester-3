@@ -6,6 +6,10 @@ namespace LazyTests
     [TestClass]
     public class LazyThreadSafeTests
     {
-        
+        [TestInitialize]
+        public void Init()
+        {
+
+        }
     }
 }
