@@ -26,7 +26,7 @@ namespace Chatik
             else
             {
                 Console.WriteLine($"Sending {sending} to port {port}...");
-                var data = Encoding.UTF8.GetBytes("Hi, Server!");
+                var data = Encoding.UTF8.GetBytes(sending);
                 await udpClient.SendAsync(data, data.Length, "localhost", port);
             }
         }

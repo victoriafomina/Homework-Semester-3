@@ -22,15 +22,21 @@ namespace Chatik
 
             if (ip != "!")
             {
-                //var ipAddress = new IPAddress(BitConverter.GetBytes(int.Parse(ip)));
-                //var ip = new IPAddress.
-                var client = new Client(portNumber, IPAddress.Any);
-                await client.Work();
+                while (true)
+                {
+                    //var ipAddress = new IPAddress(BitConverter.GetBytes(int.Parse(ip)));
+                    //var ip = new IPAddress.
+                    var client = new Client(portNumber, IPAddress.Any);
+                    await client.Work();
+                }
             }
             else
             {
-                var server = new Server(portNumber);
-                await server.Work();
+                while (true)
+                {
+                    var server = new Server(portNumber);
+                    await server.Work();
+                }
             }
         }
     }

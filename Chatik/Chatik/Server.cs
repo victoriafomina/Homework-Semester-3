@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -48,9 +49,10 @@ namespace Chatik
             }
             else
             {
-                Console.WriteLine($"Sending \"Hi, Client!\" to port {port}...");
-                var data = Encoding.UTF8.GetBytes("Hi, Client!");
-                await udpClient.SendAsync(data, data.Length, "localhost", port);
+                Console.WriteLine($"Sending {sending} to port {port}...");
+                var data = Encoding.UTF8.GetBytes(sending);
+                //  await udpClient.SendAsync(data, data.Length, "localhost", port);
+                await udpClient.SendAsync(data, data.Length);
             }
         }
 
