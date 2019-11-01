@@ -15,7 +15,7 @@ namespace Chatik
             }
             else if (args.Length == 2)
             {
-                var client = new Client(int.Parse(args[0]), IPAddress.Parse(args[0]));
+                var client = new Client(int.Parse(args[0]), IPAddress.Parse(args[1]));
                 await client.Work();
             }
         }

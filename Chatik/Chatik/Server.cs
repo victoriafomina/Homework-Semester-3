@@ -7,16 +7,24 @@ namespace Chatik
 {
     public class Server
     {
-        public Server(int port) => this.udpClient = new UdpClient(port);
+        public Server(int port)
+        {
+            this.udpClient = new UdpClient(port);
+            working = true;
+        }
 
         public async Task Work()
         {
-            await Listen();
-            await Write();
+            while (working)
+            {
+                await Listen();
+                await Write();
+            }
         }
 
         private async Task Listen()
         {
+           
             Console.WriteLine("Server is ready to listen");
 
             UdpReceiveResult getInfo = await udpClient.ReceiveAsync();
@@ -26,27 +34,34 @@ namespace Chatik
             if (getStr == "exit")
             {
                 udpClient.Close();
+                working = false;
             }
             else
             {
                 Console.WriteLine(getStr);
             }
+            
         }
 
         private async Task Write()
         {
-            Console.WriteLine("Server is ready to write");
-
-            var message = Console.ReadLine();
-            var dataToSend = Encoding.UTF8.GetBytes(message);
-            await udpClient.SendAsync(dataToSend, dataToSend.Length);
-
-            if (message == "exit")
+            if (working)
             {
-                udpClient.Close();
-            }
+                Console.WriteLine("Server is ready to write");
+
+                var message = Console.ReadLine();
+                var dataToSend = Encoding.UTF8.GetBytes(message);
+                await udpClient.SendAsync(dataToSend, dataToSend.Length);
+
+                if (message == "exit")
+                {
+                    udpClient.Close();
+                    working = false;
+                }
+            }         
         }
 
         private readonly UdpClient udpClient;
+        private bool working;
     }
 }
