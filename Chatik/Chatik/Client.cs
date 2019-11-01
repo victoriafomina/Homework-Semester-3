@@ -46,7 +46,7 @@ namespace Chatik
 
                 UdpReceiveResult getInfo = await udpClient.ReceiveAsync();
 
-                var getStr = getInfo.ToString();
+                var getStr = Encoding.UTF8.GetString(getInfo.Buffer);
 
                 if (getStr == "exit")
                 {
