@@ -29,9 +29,9 @@ namespace Lazy
             return value;
         }
 
-        private object locker;
+        private readonly object locker;
         private bool isCalculated = false;
-        private Func<T> supplier;
+        private readonly Func<T> supplier;
         private T value;
     }
 }

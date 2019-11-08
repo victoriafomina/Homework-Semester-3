@@ -28,7 +28,7 @@ namespace Lazy
         }
 
         private T value;
-        private bool isCalculated;
-        private Func<T> supplier;
+        private readonly bool isCalculated;
+        private readonly Func<T> supplier;
     }
 }
