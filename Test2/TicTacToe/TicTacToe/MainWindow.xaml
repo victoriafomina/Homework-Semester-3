@@ -30,10 +30,6 @@
         <Button x:Name="button21" Grid.Row="2" Grid.Column="1" Click="ButtonField_Click" Content="" Background="AliceBlue" />
         <Button x:Name="button22" Grid.Row="2" Grid.Column="2" Click="ButtonField_Click" Content="" Background="AliceBlue" />
 
-        <Button Grid.Row="1" Grid.Column="3" Click="ButtonPlayAgain_Click" Content="Play Again" FontSize="30" Background="Bisque" />
+        <Button x:Name="playAgain" Grid.Row="1" Grid.Column="3" Click="ButtonPlayAgain_Click" Content="Play Again" FontSize="30" Background="Bisque"  Visibility="Collapsed"/>
     </Grid>
-
-
-
-
 </Window>
