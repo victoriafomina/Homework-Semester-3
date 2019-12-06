@@ -1,17 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace TicTacToe
 {
@@ -27,41 +15,11 @@ namespace TicTacToe
             InitializeComponent();
         }
 
-        /// <summary>
-        /// Handles click of field's button.
-        /// </summary>
         private void ButtonField_Click(object sender, RoutedEventArgs e)
         {
-            if ((sender as Button).Content.ToString() == "")
-            {
-                switch (player)
-                {
-                    case 'o':
-                        (sender as Button).Content = "o";
-                        break;
-                    case 'x':
-                        (sender as Button).Content = "x";
-                        break;
-                }
-
-                (sender as Button).FontSize = 80;
-
-                if (SomeoneWon())
-                {
-                    MessageBox.Show($"Player {player.ToString().ToUpper()} won!");
-                }
-                else if (NoWayToMove())
-                {
-                    MessageBox.Show("Draw!");
-                }
-
-                ChangePlayer();
-            }
+            MakeAMove(sender as Button);
         }
 
-        /// <summary>
-        /// Handles click of the button play again.
-        /// </summary>
         private void ButtonPlayAgain_Click(object sender, RoutedEventArgs e)
         {
             player = 'x';
@@ -76,9 +34,40 @@ namespace TicTacToe
             button22.Content = "";
         }
 
-        /// <summary>
-        /// Changes current player.
-        /// </summary>
+        public void MakeAMove(Button buttonWantToMove)
+        {
+            if (buttonWantToMove.Content.ToString() == "")
+            {
+                switch (player)
+                {
+                    case 'o':
+                        buttonWantToMove.Content = "o";
+                        break;
+                    case 'x':
+                        buttonWantToMove.Content = "x";
+                        break;
+                }
+
+                buttonWantToMove.FontSize = 80;
+
+                if (SomeoneWon())
+                {
+                    MessageBox.Show($"Player {GetPlayer().ToString().ToUpper()} won!");
+                }
+                else if (NoWayToMove())
+                {
+                    MessageBox.Show("Draw!");
+                }
+
+                if (!SomeoneWon() && !NoWayToMove())
+                {
+                    ChangePlayer();
+                }
+            }
+        }
+
+        private char GetPlayer() => player;
+
         private void ChangePlayer()
         {
             if (player == 'o')
@@ -91,7 +80,6 @@ namespace TicTacToe
             }
         }
 
-        /// <returns>true when game has finished with the winning of some player, otherwise renerns false</returns>
         private bool SomeoneWon()
         {
             if (button00.Content.ToString() != "" && button00.Content == button01.Content && button01.Content == button02.Content)
@@ -130,11 +118,10 @@ namespace TicTacToe
             return false;
         }
 
-        /// <returns>true when there is no field that the player can draw his character</returns>
         private bool NoWayToMove()
         {
-            if (button00.Content.ToString() != "" && button01.Content.ToString() != "" && button02.Content.ToString() != "" && button10.Content.ToString() != "" && 
-                    button11.Content.ToString() != "" && button12.Content.ToString() != "" && button20.Content.ToString() != "" && 
+            if (button00.Content.ToString() != "" && button01.Content.ToString() != "" && button02.Content.ToString() != "" && button10.Content.ToString() != "" &&
+                    button11.Content.ToString() != "" && button12.Content.ToString() != "" && button20.Content.ToString() != "" &&
                     button21.Content.ToString() != "" && button22.Content.ToString() != "")
             {
                 return true;
