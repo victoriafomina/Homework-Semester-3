@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29409.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MD5", "MD5\MD5.csproj", "{D785EDA7-5AD1-4F17-A007-6F2C5C7B773D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MD5HashTests", "MD5HashTests\MD5HashTests.csproj", "{ABBC065B-2F02-430D-AE97-6E1EE3A5EB32}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D785EDA7-5AD1-4F17-A007-6F2C5C7B773D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D785EDA7-5AD1-4F17-A007-6F2C5C7B773D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D785EDA7-5AD1-4F17-A007-6F2C5C7B773D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D785EDA7-5AD1-4F17-A007-6F2C5C7B773D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABBC065B-2F02-430D-AE97-6E1EE3A5EB32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABBC065B-2F02-430D-AE97-6E1EE3A5EB32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABBC065B-2F02-430D-AE97-6E1EE3A5EB32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABBC065B-2F02-430D-AE97-6E1EE3A5EB32}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {30238668-7209-480E-9552-B43D090E3E56}
+	EndGlobalSection
+EndGlobal
