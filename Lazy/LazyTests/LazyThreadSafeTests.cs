@@ -2,40 +2,79 @@
 using Lazy;
 using System;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace LazyTests
 {
     [TestClass]
-    public class LazyThreadSafeTests
+    public class ThreadSafeLazyTests
     {
         [TestMethod]
-        public void SmokeTest()
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void ThreadSafeNullExceptionTest()
         {
-            Func<int> thirdPowerOf5 = () => 5 * 5 * 5;
-            var lazy = LazyFactory<int>.CreateThreadSafe(thirdPowerOf5);
-            var numberOfThreads = 100;
-            ManualResetEvent sync = new ManualResetEvent(false);
+            Func<string> supplier = null;
+            LazyFactory<string>.CreateThreadSafe(supplier);
+        }
 
-            var threads = new Thread[numberOfThreads];
-            var results = new int[numberOfThreads];
+        [TestMethod]
+        public void ThreadSafeLazyStringTest()
+        {
+            Func<string> toLower = () => "OlOLo".ToLower();
+            var lazy = LazyFactory<string>.CreateThreadSafe(toLower);
 
-            for (var i = 0; i < numberOfThreads; ++i)
+            var threads = new List<Thread>();
+
+            for (var i = 0; i < 100; ++i)
             {
-                threads[i] = new Thread(() => {
-                    results[i] = lazy.Get();
-                });
-
-                sync.Set();
+                threads.Add(new Thread(() =>
+                {
+                    Assert.AreEqual("ololo", lazy.Get());
+                }));
             }
 
-            sync.WaitOne();
-
-            for (var i = 0; i < numberOfThreads; ++i)
+            foreach (var thread in threads)
             {
-                threads[i].Start();
+                thread.Start();
             }
 
-            for
+            foreach (var thread in threads)
+            {
+                thread.Join();
+            }
+        }
+
+        [TestMethod]
+        public void ThreadSafeIncrementLazyTest()
+        {
+            var counter = 0;
+
+            Func<int> increment = () => ++counter;
+
+            var lazy = LazyFactory<int>.CreateThreadSafe(increment);
+
+            var threads = new List<Thread>();
+
+            for (var i = 0; i < 100; ++i)
+            {
+                threads.Add(new Thread(() =>
+                {
+                    var testGet = lazy.Get();
+                    Assert.AreEqual(1, lazy.Get());
+                }));
+            }
+
+            foreach (var thread in threads)
+            {
+                thread.Start();
+            }
+
+            foreach (var thread in threads)
+            {
+                thread.Join();
+            }
+
+            Assert.AreEqual(1, counter);
         }
     }
 }

@@ -13,6 +13,11 @@ namespace Lazy
         /// <param name="supplier"></param>
         public Lazy(Func<T> supplier)
         {
+            if (supplier == null)
+            {
+                throw new ArgumentNullException();
+            }
+
             this.supplier = supplier;
         }
 

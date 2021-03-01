@@ -10,6 +10,11 @@ namespace Lazy
         /// </summary>
         public LazyThreadSafe(Func<T> supplier)
         {
+            if (supplier == null)
+            {
+                throw new ArgumentNullException();
+            }
+
             Volatile.Write(ref isCalculated, false);
             this.supplier = supplier;
         }
@@ -21,6 +26,11 @@ namespace Lazy
             {
                 lock (locker)
                 {
+                    if (isCalculated)
+                    {
+                        return value;
+                    }
+
                     value = supplier();
                     isCalculated = true;
                 }
@@ -29,7 +39,7 @@ namespace Lazy
             return value;
         }
 
-        private readonly object locker;
+        private readonly object locker = new object();
         private bool isCalculated = false;
         private readonly Func<T> supplier;
         private T value;

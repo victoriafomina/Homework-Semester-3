@@ -18,6 +18,14 @@ namespace LazyTests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void LazyNullExceptionTest()
+        {
+            Func<int> supplier = null;
+            LazyFactory<int>.Create(supplier);
+        }
+
+        [TestMethod]
         public void StupidLazyStringTest()
         {
             Func<string> toLower = () => "OlOLo".ToLower();
