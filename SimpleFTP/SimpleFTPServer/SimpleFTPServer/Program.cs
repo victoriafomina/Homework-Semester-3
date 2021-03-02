@@ -11,7 +11,6 @@ namespace SimpleFTPServer
         public void Main(string[] args)
         {
            
-        }
-        
+        }        
     }
 }

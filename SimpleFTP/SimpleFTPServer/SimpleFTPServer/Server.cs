@@ -1,7 +1,4 @@
-﻿using System;
-using System.Net;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.IO;
@@ -10,19 +7,17 @@ using System.Threading;
 namespace SimpleFTPServer
 {
     /// <summary>
-    /// Server that handles two requests: List (listing files in the server's directory) and Get (saving
-    /// file from server's directory).
+    /// Server that handles two requests: List (listing files in the server's directory) and Get (downloading a
+    /// file from the server's directory).
     /// </summary>
     public class Server
     {
         private TcpListener listener;
-        private int port;
         private CancellationTokenSource cancellationToken;
 
         public Server(int port)
         {
             listener = new TcpListener(IPAddress.Any, port);
-            this.port = port;
             cancellationToken = new CancellationTokenSource();
         }
 
@@ -39,6 +34,11 @@ namespace SimpleFTPServer
                 HandleClient(client);
             }
         }
+
+        /// <summary>
+        /// Stops the server.
+        /// </summary>
+        public void Stop() => listener.Stop();
 
         /// <summary>
         /// Handles a client.

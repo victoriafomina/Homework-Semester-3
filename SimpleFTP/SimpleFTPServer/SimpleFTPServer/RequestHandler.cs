@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SimpleFTPServer
 {
     /// <summary>
-    /// The class was implemented to handle clients' requests.
+    /// Handles clients' requests.
     /// </summary>
     public static class RequestHandler
     {
@@ -48,7 +46,7 @@ namespace SimpleFTPServer
         }
 
         /// <summary>
-        /// Makes listing (listing files in the server's directory)
+        /// Makes listing (listing files in the server's directory).
         /// </summary>
         private static async Task List(string path, int delta, StreamWriter writer)
         {
