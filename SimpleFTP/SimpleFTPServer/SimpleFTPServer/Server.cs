@@ -10,7 +10,7 @@ using System.Threading;
 namespace SimpleFTPServer
 {
     /// <summary>
-    /// Server that handles two requests: List (listing files of the server's directory) and Get (saving
+    /// Server that handles two requests: List (listing files in the server's directory) and Get (saving
     /// file from server's directory).
     /// </summary>
     public class Server
@@ -54,7 +54,7 @@ namespace SimpleFTPServer
 
                     var request = await reader.ReadLineAsync();
 
-                    RequestHandler.HandleRequest(request, writer);
+                    await RequestHandler.HandleRequest(request, writer);
                 }
             });
         }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SimpleFTPServer
 {
@@ -13,38 +14,117 @@ namespace SimpleFTPServer
         /// <summary>
         /// Handles the client's request.
         /// </summary>
-        public static void HandleRequest(string request, StreamWriter writer)
+        public static async Task HandleRequest(string request, StreamWriter writer)
         {
-            if (!RequestParser.IsCorrectRequestFormat(request))
+            (int, string) parsedRequest;
+            var errorMessage = "Invalid request body!";
+
+            try
             {
-                Console.WriteLine("Invalid request body!");
+                parsedRequest = Parse(request);
+            }
+            catch (InvalidRequestBodyException)
+            {
+                await writer.WriteLineAsync(errorMessage);
                 return;
             }
 
-            var parsedRequest = RequestParser.Parse(request);
+            var root = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName, "res\\");
+            var path = Path.Combine(root, parsedRequest.Item2);
 
             switch (parsedRequest.Item1)
             {
                 case 1:
-                    List(parsedRequest.Item2);
+                    var delta = root.Length;
+                    await List(path, delta, writer);
                     break;
                 case 2:
-                    Get(parsedRequest.Item2);
+                    await Get(path, writer);
                     break;
                 default:
-                    throw new InvalidRequestBodyException("Invalid request body!");
+                    await writer.WriteLineAsync(errorMessage);
+                    return;
             }
         }
 
-        private static string List(string path)
+        /// <summary>
+        /// Makes listing (listing files in the server's directory)
+        /// </summary>
+        private static async Task List(string path, int delta, StreamWriter writer)
         {
+            if (!Directory.Exists(path))
+            {
+                await writer.WriteLineAsync("-1");
+                return;
+            }
 
-            return "";
+            var response = new StringBuilder();
+
+            var files = Directory.GetFiles(path);
+            var folders = Directory.GetDirectories(path);
+
+            var responseSize = files.Length + folders.Length;
+
+            response.Append($"{responseSize} ");
+
+            foreach (var file in files)
+            {
+                var formattedName = file.Remove(0, delta);
+                response.Append($".\\{formattedName} false ");
+            }
+
+            foreach (var folder in folders)
+            {
+                var formattedName = folder.Remove(0, delta);
+                response.Append($".\\{formattedName} true ");
+            }
+
+            await writer.WriteLineAsync(response.ToString());
         }
-        private static string Get(string path)
-        {
 
-            return "";
+        /// <summary>
+        /// Gets a file from the server's directory.
+        /// </summary>
+        private static async Task Get(string path, StreamWriter writer)
+        {
+            if (!File.Exists(path))
+            {
+                await writer.WriteLineAsync("-1");
+                return;
+            }
+
+            var size = new FileInfo(path).Length;
+            await writer.WriteLineAsync($"{size} ");
+
+            using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.ReadWrite))
+            {
+                await fileStream.CopyToAsync(writer.BaseStream);
+            }
+        }
+
+        /// <summary>
+        /// Parses string into tuple(int x , string y). Where x is a request type number, y is a path.
+        /// </summary>
+        /// <exception cref="InvalidRequestBodyException">Thrown when request body is invalid.</exception>
+        public static (int, string) Parse(string request)
+        {
+            var errorMessage = "Invalid request body!";
+
+            if (request == null || request.Length < 3)
+            {
+                throw new InvalidRequestBodyException(errorMessage);
+            }
+
+            (int, string) parsedRequest;
+
+            if (int.TryParse(request[0].ToString(), out parsedRequest.Item1))
+            {
+                parsedRequest.Item2 = request.Substring(1);
+
+                return parsedRequest;
+            }
+
+            throw new InvalidRequestBodyException(errorMessage);
         }
     }
 }
