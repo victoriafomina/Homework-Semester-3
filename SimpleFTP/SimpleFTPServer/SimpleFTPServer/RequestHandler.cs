@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,6 +15,8 @@ namespace SimpleFTPServer
         /// </summary>
         public static async Task HandleRequest(string request, StreamWriter writer)
         {
+            Console.WriteLine(request);
+
             (int, string) parsedRequest;
             var errorMessage = "Invalid request body!";
 
@@ -27,7 +30,7 @@ namespace SimpleFTPServer
                 return;
             }
 
-            var root = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName, "res\\");
+            var root = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName).Parent.FullName).FullName;
             var path = Path.Combine(root, parsedRequest.Item2);
 
             switch (parsedRequest.Item1)
@@ -68,13 +71,13 @@ namespace SimpleFTPServer
             foreach (var file in files)
             {
                 var formattedName = file.Remove(0, delta);
-                response.Append($".\\{formattedName} false ");
+                response.Append($".{formattedName} false ");
             }
 
             foreach (var folder in folders)
             {
                 var formattedName = folder.Remove(0, delta);
-                response.Append($".\\{formattedName} true ");
+                response.Append($".{formattedName} true ");
             }
 
             await writer.WriteLineAsync(response.ToString());

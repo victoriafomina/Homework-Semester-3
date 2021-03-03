@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleFTPServer", "SimpleFT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleFTPTests", "SimpleFTPTests\SimpleFTPTests.csproj", "{C7F301AB-25E8-419F-9638-00391F86ACC4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleFTPClient", "..\SimpleFTPClient\SimpleFTPClient\SimpleFTPClient.csproj", "{865F3180-6319-44A0-8D2C-FC699A343189}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{C7F301AB-25E8-419F-9638-00391F86ACC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7F301AB-25E8-419F-9638-00391F86ACC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7F301AB-25E8-419F-9638-00391F86ACC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{865F3180-6319-44A0-8D2C-FC699A343189}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{865F3180-6319-44A0-8D2C-FC699A343189}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{865F3180-6319-44A0-8D2C-FC699A343189}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{865F3180-6319-44A0-8D2C-FC699A343189}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

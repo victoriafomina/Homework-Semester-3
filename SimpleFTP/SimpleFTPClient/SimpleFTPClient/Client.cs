@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace FTPClient
+namespace SimpleFTPClient
 {
     /// <summary>
     /// Client that can make two requests: List (listing files in the server's directory) and Get (downloading a
@@ -15,7 +14,7 @@ namespace FTPClient
 
         private int port;
 
-        private TcpClient client;
+        private TcpClient client = null;
 
         public Client(string server, int port)
         {
@@ -26,13 +25,19 @@ namespace FTPClient
         /// <summary>
         /// Runs the client.
         /// </summary>
-        public void Run() => client = new TcpClient(server, port);
+        public void Run()
+        {
+            client = new TcpClient(server, port);
+        }
 
         /// <summary>
         /// Does listing.
         /// </summary>
+        /// <exception cref="ClientNotRunningException">Thrown when the client is not running.</exception>
         public async Task<string> List(string path)
         {
+            CheckRunning();
+
             var writer = new StreamWriter(client.GetStream()) { AutoFlush = true };
             var reader = new StreamReader(client.GetStream());
 
@@ -44,8 +49,11 @@ namespace FTPClient
         /// <summary>
         /// Downloads the file from the server.
         /// </summary>
+        /// <exception cref="ClientNotRunningException">Thrown when the client is not running.</exception>
         public async Task Get(string downloadFrom, string downloadTo)
         {
+            CheckRunning();
+
             var temp = downloadFrom.Split('\\');
             var fileName = temp[temp.Length - 1];
 
@@ -66,6 +74,17 @@ namespace FTPClient
             using (var fileStream = new FileStream(downloadTo + fileName, FileMode.CreateNew))
             {
                 await reader.BaseStream.CopyToAsync(fileStream);
+            }
+        }
+
+        /// <summary>
+        /// Checks if the client is running.
+        /// </summary>
+        private void CheckRunning()
+        {
+            if (client == null || !client.Connected)
+            {
+                throw new ClientNotRunningException("Client is not running!");
             }
         }
 
