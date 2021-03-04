@@ -1,7 +1,6 @@
 ﻿using MyNUnit.Attributes;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -66,8 +65,6 @@ namespace MyNUnit
         /// <param name="type">The class whose methods will be tested.</param>
         public void QueueTestedClassMethods(Type type)
         {
-            var tasks = new List<Task>();
-
             foreach (var method in type.GetMethods())
             {
                 Task task = Task.Run(() => {
@@ -102,8 +99,6 @@ namespace MyNUnit
                         AddMethodToQueue(method, AfterClassTests);
                     }
                 });
-
-                tasks.Add(task);
             }
         }
     }
