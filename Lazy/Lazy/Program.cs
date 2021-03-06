@@ -1,6 +1,4 @@
-﻿
-
-namespace Lazy
+﻿namespace Lazy
 {
     public class Program
     {

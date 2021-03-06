@@ -7,15 +7,15 @@ namespace Lazy
     /// </summary>
     public class LazyFactory<T>
     {
-        public static Lazy<T> Create(Func<T> supplier)
-        {
-            return new Lazy<T>(supplier);
-        }
+        /// <summary>
+        /// Creates Lazy instance (non thread-safe).
+        /// </summary>
+        public static Lazy<T> Create(Func<T> supplier) => new Lazy<T>(supplier);
 
-        public static LazyThreadSafe<T> CreateThreadSafe(Func<T> supplier)
-        {
-            return new LazyThreadSafe<T>(supplier);
-        }
-          
+        /// <summary>
+        /// Creates LazyTheadSafe instance.
+        /// </summary>
+        public static LazyThreadSafe<T> CreateThreadSafe(Func<T> supplier) =>
+                new LazyThreadSafe<T>(supplier);
     }
 }

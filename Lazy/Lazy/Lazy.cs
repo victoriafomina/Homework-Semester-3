@@ -10,7 +10,6 @@ namespace Lazy
         /// <summary>
         /// Creates an object of the class Lazy.
         /// </summary>
-        /// <param name="supplier"></param>
         public Lazy(Func<T> supplier)
         {
             if (supplier == null)
@@ -21,19 +20,21 @@ namespace Lazy
             this.supplier = supplier;
         }
 
-        /// <returns>value of the Lazy object</returns>
+        /// <summary>Returns value of the object.</summary>
         public T Get()
         {
             if (!isCalculated)
             {
                 value = supplier();
+                isCalculated = true;
+                supplier = null;
             }
 
             return value;
         }
 
         private T value;
-        private readonly bool isCalculated;
-        private readonly Func<T> supplier;
+        private bool isCalculated;
+        private Func<T> supplier;
     }
 }

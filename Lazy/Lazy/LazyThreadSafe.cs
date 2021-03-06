@@ -3,10 +3,13 @@ using System.Threading;
 
 namespace Lazy
 {
+    /// <summary>
+    /// Implements thread-safe ILazy. Lets make late initialization.
+    /// </summary>
     public class LazyThreadSafe<T> : ILazy<T>
     {
         /// <summary>
-        /// Implements ILazy interface. Lets make thread-safe late initialization.
+        /// Initializes an instance of the LazyThreadSafe object.
         /// </summary>
         public LazyThreadSafe(Func<T> supplier)
         {
@@ -15,7 +18,7 @@ namespace Lazy
                 throw new ArgumentNullException();
             }
 
-            Volatile.Write(ref isCalculated, false);
+            isCalculated = false;
             this.supplier = supplier;
         }
 
@@ -26,13 +29,14 @@ namespace Lazy
             {
                 lock (locker)
                 {
-                    if (isCalculated)
+                    if (Volatile.Read(ref isCalculated))
                     {
                         return value;
                     }
 
                     value = supplier();
-                    isCalculated = true;
+                    Volatile.Write(ref isCalculated, true);
+                    supplier = null;
                 }
             }
 
@@ -41,7 +45,7 @@ namespace Lazy
 
         private readonly object locker = new object();
         private bool isCalculated = false;
-        private readonly Func<T> supplier;
+        private Func<T> supplier;
         private T value;
     }
 }

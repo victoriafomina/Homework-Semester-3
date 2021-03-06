@@ -34,5 +34,22 @@ namespace LazyTests
             Assert.AreEqual("ololo", lazy.Get());
         }
 
+        [TestMethod]
+        public void IncrementLazyTest()
+        {
+            var counter = 0;
+
+            Func<int> increment = () => ++counter;
+
+            var lazy = LazyFactory<int>.Create(increment);
+
+            for (var i = 0; i < 100; ++i)
+            {
+                var testGet = lazy.Get();
+                Assert.AreEqual(1, lazy.Get());
+            }
+
+            Assert.AreEqual(1, counter);
+        }
     }
 }
