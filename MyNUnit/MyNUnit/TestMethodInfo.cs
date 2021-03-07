@@ -8,16 +8,22 @@ namespace MyNUnit
     public class TestMethodInfo
     {
         /// <summary>
-        /// Конструктор для создания отчёта о проигнорированном методе
+        /// Initializes an object of TestMethodInfo.
         /// </summary>
         public TestMethodInfo(string name) => Name = name;
 
+        /// <summary>
+        /// Sets information about ignored test method.
+        /// </summary>
         public void SetInfoIgnoredTest(string ignoreMessage)
         {
             Ignored = true;
             IgnoreMessage = ignoreMessage;
         }
 
+        /// <summary>
+        /// Sets information about passed test method.
+        /// </summary>
         public void SetInfoPassedTest(bool passed, Type expectedException, Type thrownException, TimeSpan time)
         {
             Ignored = false;
@@ -27,28 +33,13 @@ namespace MyNUnit
             Time = time;
         }
 
-        /*
-        /// <summary>
-        /// Конструктор для создания отчёта о выполненном тестовом методе
-        /// </summary>
-        public TestMethodInfo(string name, bool passed, Type expectedException, Type thrownException, TimeSpan time)
-        {
-            Name = name;
-            Ignored = false;
-            Passed = passed;
-            ExpectedException = expectedException;
-            ThrownException = thrownException;
-            Time = time;
-        }
-        */
-
         /// <summary>
         /// Test method name.
         /// </summary>
         public string Name { get; private set; }
 
         /// <summary>
-        /// Indicates if the test passed.
+        /// Indicates if the test is passed.
         /// </summary>
         public bool Passed { get; private set; }
 

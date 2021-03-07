@@ -16,38 +16,27 @@ namespace MyNUnit
     public static class MyNUnit
     {
         /// <summary>
-        /// Запуск тестов с выводом результатов на экран
+        /// Tests results.
         /// </summary>
-        public static void Run(string path)
-        {
-            results = new ConcurrentDictionary<Type, ConcurrentBag<TestMethodInfo>>();
-            testedMethods = new ConcurrentDictionary<Type, MyNUnitLogic>();
-            RunTestsByPath(path);
-
-            PrintReport();
-        }
+        private static ConcurrentDictionary<Type, ConcurrentQueue<TestMethodInfo>> testsResults;
 
         /// <summary>
-        /// Запуск тестов с сохранением результатов в виде словаря
+        /// Methods to test.
         /// </summary>
-        public static Dictionary<Type, List<TestMethodInfo>> RunTestsAndGetReport(string path)
+        private static ConcurrentDictionary<Type, MyNUnitLogic> testedMethods;
+
+        /// <summary>
+        /// Runs tests.
+        /// </summary>
+        /// <returns>the result of test running</returns>
+        public static Dictionary<Type, List<TestMethodInfo>> Run(string path)
         {
-            results = new ConcurrentDictionary<Type, ConcurrentBag<TestMethodInfo>>();
+            testsResults = new ConcurrentDictionary<Type, ConcurrentQueue<TestMethodInfo>>();
             testedMethods = new ConcurrentDictionary<Type, MyNUnitLogic>();
             RunTestsByPath(path);
 
             return GetReportAboutTests();
         }
-
-        /// <summary>
-        /// Результаты тестов
-        /// </summary>
-        private static ConcurrentDictionary<Type, ConcurrentBag<TestMethodInfo>> results;
-
-        /// <summary>
-        /// Методы для тестирования
-        /// </summary>
-        private static ConcurrentDictionary<Type, MyNUnitLogic> testedMethods;
 
         /// <summary>
         /// Runs tests by path.
@@ -57,10 +46,10 @@ namespace MyNUnit
             var classes = GetClasses(path);
 
             Parallel.ForEach(classes, someClass => {
-                QueueClassTests(someClass);
+                ClassTests(someClass);
             });
 
-            RunAllTests();
+            RunTests();
         }
 
         /// <summary>
@@ -70,11 +59,11 @@ namespace MyNUnit
         {
             var result = new Dictionary<Type, List<TestMethodInfo>>();
 
-            foreach (var type in results.Keys)
+            foreach (var type in testsResults.Keys)
             {
                 result.Add(type, new List<TestMethodInfo>());
 
-                foreach (var testInfo in results[type])
+                foreach (var testInfo in testsResults[type])
                 {
                     result[type].Add(testInfo);
                 }
@@ -102,44 +91,50 @@ namespace MyNUnit
         }
 
         /// <summary>
-        /// Загрузка методов для тестирования переданного класса в очередь
+        /// Loads tested methods.
         /// </summary>
-        private static void QueueClassTests(Type type) => testedMethods.TryAdd(type, new MyNUnitLogic(type));
+        private static void ClassTests(Type type) => testedMethods.TryAdd(type, new MyNUnitLogic(type));
 
         /// <summary>
-        /// Исполнение всех тестов
+        /// Runs all the tests.
         /// </summary>
-        private static void RunAllTests()
+        private static void RunTests()
         {
-            Parallel.ForEach(testedMethods.Keys, type =>
+            var tasks = new List<Task>();
+            
+            foreach (var type in testedMethods.Keys)
             {
-                results.TryAdd(type, new ConcurrentBag<TestMethodInfo>());
-
-                foreach (var beforeClassMethod in testedMethods[type].BeforeClassTests)
+                var task = Task.Run(() =>
                 {
-                    RunNonTestMethod(beforeClassMethod, null);
-                }
+                    testsResults.TryAdd(type, new ConcurrentQueue<TestMethodInfo>());
 
-                foreach (var testMethod in testedMethods[type].Tests)
-                {
-                    RunTestMethod(type, testMethod);
-                }
+                    foreach (var beforeClassMethod in testedMethods[type].BeforeClassTests)
+                    {
+                        RunNonTestMethod(beforeClassMethod, null);
+                    }
 
-                foreach (var afterClassMethod in testedMethods[type].AfterClassTests)
-                {
-                    RunNonTestMethod(afterClassMethod, null);
-                }
-            });
+                    foreach (var testMethod in testedMethods[type].Tests)
+                    {
+                        RunTestMethod(type, testMethod);
+                    }
+
+                    foreach (var afterClassMethod in testedMethods[type].AfterClassTests)
+                    {
+                        RunNonTestMethod(afterClassMethod, null);
+                    }
+                });
+
+                tasks.Add(task);
+            }
+
+            Task.WaitAll(tasks.ToArray());
         }
 
         /// <summary>
-        /// Исполение переданного тестового метода
+        /// Gets instance by invocating a constructor.
         /// </summary>
-        private static void RunTestMethod(Type type, MethodInfo method)
+        private static object GetInstanceByInvocationConstructor(Type type)
         {
-            var attribute = method.GetCustomAttribute<TestAttribute>();
-            var passed = false;
-            Type thrownException = null;
             var emptyConstructor = type.GetConstructor(Type.EmptyTypes);
 
             if (emptyConstructor == null)
@@ -147,20 +142,30 @@ namespace MyNUnit
                 throw new FormatException($"The class doesn't have a constructor without parameters");
             }
 
-            var instance = emptyConstructor.Invoke(null);
+            return emptyConstructor.Invoke(null);
+        }
+
+        /// <summary>
+        /// Runs the test method.
+        /// </summary>
+        private static void RunTestMethod(Type type, MethodInfo method)
+        {
+            var attribute = method.GetCustomAttribute<TestAttribute>();
 
             if (attribute.Ignored)
             {
                 var ignored = new TestMethodInfo(method.Name);
                 ignored.SetInfoIgnoredTest(attribute.IgnoreMessage);
-                results[type].Add(ignored);
+                testsResults[type].Enqueue(ignored);
 
                 return;
             }
 
-            foreach (var beforeTestMethod in testedMethods[type].BeforeTests)
+            var instance = GetInstanceByInvocationConstructor(type);
+
+            foreach (var beforeTest in testedMethods[type].BeforeTests)
             {
-                RunNonTestMethod(beforeTestMethod, instance);
+                RunNonTestMethod(beforeTest, instance);
             }
 
             var stopwatch = new Stopwatch();
@@ -169,107 +174,34 @@ namespace MyNUnit
             try
             {
                 method.Invoke(instance, null);
-
-                if (attribute.ExpectedException == null)
-                {
-                    passed = true;
-                    stopwatch.Stop();
-                }
+                stopwatch.Stop();
             }
-            catch (Exception testException)
+            catch (Exception e)
             {
-                thrownException = testException.InnerException.GetType();
-
-                if (thrownException == attribute.ExpectedException)
+                if (e.InnerException.GetType() == attribute.ExpectedException)
                 {
-                    passed = true;
                     stopwatch.Stop();
                 }
             }
             finally
             {
                 stopwatch.Stop();
-                var ellapsedTime = stopwatch.Elapsed;
+                var timeElapsed = stopwatch.Elapsed;
                 var testMethodInfo = new TestMethodInfo(method.Name);
-                testMethodInfo.SetInfoPassedTest(passed, attribute.ExpectedException, thrownException, ellapsedTime);
-                results[type].Add(testMethodInfo);
+                testMethodInfo.SetInfoPassedTest(false, attribute.ExpectedException, null, timeElapsed);
+                testsResults[type].Enqueue(testMethodInfo);
             }
 
-            foreach (var afterTestMethod in testedMethods[type].AfterTests)
+            foreach (var afterTest in testedMethods[type].AfterTests)
             {
-                RunNonTestMethod(afterTestMethod, instance);
+                RunNonTestMethod(afterTest, instance);
             }
         }
 
         /// <summary>
-        /// Исполнение метода, который требуется для тестирования, но не помеченного аттрибутом [Test]
+        /// Runs test that is needed for testing but is not marked with the TestAttribute.
         /// </summary>
         private static void RunNonTestMethod(MethodInfo method, object instance) =>
                 method.Invoke(instance, null);
-
-        /// <summary>
-        /// Распечатывает результаты тестирования
-        /// </summary>
-        private static void PrintReport()
-        {
-            Console.WriteLine("Testing report:");
-            Console.WriteLine("-----------------------------");
-            Console.WriteLine($"Found classes to test: {testedMethods.Keys.Count}");
-
-            var allMethodsCount = 0;
-
-            foreach (var testedClass in testedMethods.Keys)
-            {
-                allMethodsCount += testedMethods[testedClass].TestsCount;
-            }
-
-            Console.WriteLine($"Found methods to test (total): {allMethodsCount}");
-
-            foreach (var someClass in results.Keys)
-            {
-                Console.WriteLine("-----------------------------");
-                Console.WriteLine($"Class: {someClass}");
-
-                var test = results;
-
-                foreach (var testInfo in results[someClass])
-                {
-                    Console.WriteLine("-----------------------------");
-                    Console.WriteLine($"Tested method: {testInfo.Name}()");
-
-                    if (testInfo.Ignored)
-                    {
-                        Console.WriteLine($"Ignored {testInfo.Name}() with message: {testInfo.IgnoreMessage}");
-                        continue;
-                    }
-
-                    if (testInfo.ExpectedException != null || testInfo.ThrownException != null)
-                    {
-                        if (testInfo.ExpectedException == null)
-                        {
-                            Console.WriteLine($"Unexpected exception: {testInfo.ThrownException}");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Expected exception: {testInfo.ExpectedException}");
-                            Console.WriteLine($"Thrown exception: {testInfo.ThrownException}");
-                        }
-                    }
-
-                    Console.WriteLine($"Ellapsed time: {testInfo.Time}");
-
-                    if (testInfo.Passed)
-                    {
-                        Console.WriteLine($"Passed {testInfo.Name}() test");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Failed {testInfo.Name}() test");
-                    }
-                }
-            }
-
-            Console.WriteLine("-----------------------------");
-        }
     }
 }
