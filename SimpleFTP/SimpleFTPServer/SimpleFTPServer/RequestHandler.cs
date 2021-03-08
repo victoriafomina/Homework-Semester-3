@@ -30,7 +30,9 @@ namespace SimpleFTPServer
                 return;
             }
 
-            var root = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName).Parent.FullName).FullName;
+            var root = Path.GetFullPath("..\\..\\..\\..\\..\\");
+            root = root.Remove(root.Length - 1);
+
             var path = Path.Combine(root, parsedRequest.Item2);
 
             switch (parsedRequest.Item1)

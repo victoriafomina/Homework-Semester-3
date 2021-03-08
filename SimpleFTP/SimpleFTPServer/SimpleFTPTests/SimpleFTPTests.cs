@@ -54,8 +54,9 @@ namespace SimpleFTP.Tests
             var listRequestFolderResult = client.List("Test\\Folder").Result;
 
             server.Stop();
+            client.Close();
 
-            client.Close();Assert.AreEqual("1 .\\Test\\Folder\\text.txt false ", listRequestFolderResult);
+            Assert.AreEqual("1 .\\Test\\Folder\\text.txt false ", listRequestFolderResult);
         }
 
         [TestMethod]

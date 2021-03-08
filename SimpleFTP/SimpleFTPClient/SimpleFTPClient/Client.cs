@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
@@ -8,7 +9,7 @@ namespace SimpleFTPClient
     /// Client that can make two requests: List (listing files in the server's directory) and Get (downloading a
     /// file from the server's directory).
     /// </summary>
-    public class Client
+    public class Client : IDisposable 
     {
         private string server;
 
@@ -25,9 +26,10 @@ namespace SimpleFTPClient
         /// <summary>
         /// Runs the client.
         /// </summary>
-        public void Run()
+        public async void Run()
         {
-            client = new TcpClient(server, port);
+            var tcpclient = new TcpClient();
+            await tcpclient.ConnectAsync(server, port);
         }
 
         /// <summary>
@@ -84,7 +86,7 @@ namespace SimpleFTPClient
         {
             if (client == null || !client.Connected)
             {
-                throw new ClientNotRunningException("Client is not running!");
+                throw new ClientNotRunningException();
             }
         }
 
@@ -92,5 +94,10 @@ namespace SimpleFTPClient
         /// Stops the client.
         /// </summary>
         public void Close() => client.Close();
+
+        /// <summary>
+        /// Disposes of resouces.
+        /// </summary>
+        public void Dispose() => client.Dispose();
     }
 }
