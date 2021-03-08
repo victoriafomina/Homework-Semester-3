@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -36,7 +37,7 @@ namespace SimpleFTPClient
         /// Does listing.
         /// </summary>
         /// <exception cref="ClientNotRunningException">Thrown when the client is not running.</exception>
-        public async Task<string> List(string path)
+        public async Task<List<(string, bool)>> List(string path)
         {
             CheckRunning();
 
@@ -44,8 +45,40 @@ namespace SimpleFTPClient
             var reader = new StreamReader(client.GetStream());
 
             await writer.WriteLineAsync("1" + path);
+            var response = await reader.ReadLineAsync();
 
-            return await reader.ReadLineAsync();
+            return ParseListResponse(response);
+        }
+
+        /// <summary>
+        /// Parses the result of list response.
+        /// </summary>
+        /// <exception cref="InvalidResponseException">Thrown when first symbol is not a number.</exception>
+        /// <exception cref="DirectoryNotFoundException">Thrown when request directory was not found.</exception>
+        private List<(string, bool)> ParseListResponse(string response)
+        {
+            var splitedResponse = response.Split(' ');
+
+            int numberOfFilesAndFolders;
+
+            if (!int.TryParse(splitedResponse[0], out numberOfFilesAndFolders))
+            {
+                throw new InvalidResponseException(response);
+            }
+
+            if (numberOfFilesAndFolders == -1)
+            {
+                throw new DirectoryNotFoundException(response);
+            }
+
+            var parsedResponse = new List<(string, bool)>();
+
+            for (var i = 1; i < numberOfFilesAndFolders * 2; i += 2)
+            {
+                parsedResponse.Add((splitedResponse[i], bool.Parse(splitedResponse[i + 1])));
+            }
+
+            return parsedResponse;
         }
 
         /// <summary>

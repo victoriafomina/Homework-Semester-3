@@ -9,7 +9,7 @@ namespace SimpleFTPClient
     public class ClientNotRunningException : Exception
     {
         /// <summary>
-        /// Initializes a new instance of the ClientNotRunningException class with the specified error message.
+        /// Initializes a new instance of the ClientNotRunningException class.
         /// </summary>
         public ClientNotRunningException() : base() { }
     }
