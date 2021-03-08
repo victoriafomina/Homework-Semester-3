@@ -13,7 +13,7 @@ namespace MyNUnit
     /// <summary>
     /// Class was implemented for running tests and getting the test running information.
     /// </summary>
-    public static class MyNUnit
+    public class MyNUnit
     {
         /// <summary>
         /// Tests results.
@@ -102,34 +102,53 @@ namespace MyNUnit
         /// </summary>
         private static void RunTests()
         {
-            var tasks = new List<Task>();
+            var tasksClasses = new List<Task>();
 
             foreach (var type in testedMethods.Keys)
             {
-                var task = Task.Run(() =>
+                var taskClass = Task.Run(() =>
                 {
                     testsResults.TryAdd(type, new ConcurrentQueue<TestMethodInfo>());
 
+                    var tasksMethods = new List<Task>();
+
                     foreach (var beforeClassMethod in testedMethods[type].BeforeClassTests)
                     {
-                        RunNonTestMethod(beforeClassMethod, null);
+                        var taskMethod = Task.Run(() => 
+                        {
+                            RunNonTestMethod(beforeClassMethod, null);
+                        });
+
+                        tasksMethods.Add(taskMethod);
                     }
 
                     foreach (var testMethod in testedMethods[type].Tests)
                     {
-                        RunTestMethod(type, testMethod);
+                        var taskMethod = Task.Run(() =>
+                        {
+                            RunTestMethod(type, testMethod);
+                        });
+
+                        tasksMethods.Add(taskMethod);
                     }
 
                     foreach (var afterClassMethod in testedMethods[type].AfterClassTests)
                     {
-                        RunNonTestMethod(afterClassMethod, null);
+                        var taskMethod = Task.Run(() =>
+                        {
+                            RunNonTestMethod(afterClassMethod, null);
+                        });
+
+                        tasksMethods.Add(taskMethod);
                     }
+
+                    Task.WaitAll(tasksClasses.ToArray());
                 });
 
-                tasks.Add(task);
+                tasksClasses.Add(taskClass);
             }
 
-            Task.WaitAll(tasks.ToArray());
+            Task.WaitAll(tasksClasses.ToArray());
         }
 
         /// <summary>
@@ -194,7 +213,8 @@ namespace MyNUnit
                 stopwatch.Stop();
                 var timeElapsed = stopwatch.Elapsed;
                 var testMethodInfo = new TestMethodInfo(method.Name);
-                testMethodInfo.SetInfoPassedTest(true, attribute.ExpectedException, null, timeElapsed);
+                var passedTest = attribute.ExpectedException == null;
+                testMethodInfo.SetInfoPassedTest(passedTest, attribute.ExpectedException, null, timeElapsed);
                 testsResults[type].Enqueue(testMethodInfo);
             }
 

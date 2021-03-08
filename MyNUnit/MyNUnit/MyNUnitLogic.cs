@@ -27,32 +27,27 @@ namespace MyNUnit
         /// <summary>
         /// Queue of the methods that are marked by an attribute AfterAttribute.
         /// </summary>
-        public ConcurrentQueue<MethodInfo> AfterTests;
+        public ConcurrentQueue<MethodInfo> AfterTests { get; private set; }
 
         /// <summary>
         /// Queue of the methods that are marked by an attribute AfterClassAttribute.
         /// </summary>
-        public ConcurrentQueue<MethodInfo> AfterClassTests;
+        public ConcurrentQueue<MethodInfo> AfterClassTests { get; private set; }
 
         /// <summary>
         /// Queue of the methods that are marked by an attribute BeforeAttribute.
         /// </summary>
-        public ConcurrentQueue<MethodInfo> BeforeTests;
+        public ConcurrentQueue<MethodInfo> BeforeTests { get; private set; }
 
         /// <summary>
         /// Queue of the methods that are marked by an attribute BeforeClassAttribute.
         /// </summary>
-        public ConcurrentQueue<MethodInfo> BeforeClassTests;
+        public ConcurrentQueue<MethodInfo> BeforeClassTests { get; private set; }
 
         /// <summary>
         /// Queue of the methods that are marked by an attribute TestAttribute.
         /// </summary>
-        public ConcurrentQueue<MethodInfo> Tests;
-
-        /// <summary>
-        /// Count of the tested methods.
-        /// </summary>
-        public int TestsCount => Tests.Count;
+        public ConcurrentQueue<MethodInfo> Tests { get; private set; }
 
         /// <summary>
         /// Adds method to the queue.
@@ -63,7 +58,7 @@ namespace MyNUnit
         /// Fills the queues by the tested methods.
         /// </summary>
         /// <param name="type">The class whose methods will be tested.</param>
-        public void FillQueueByTestedClassMethods(Type type)
+        private void FillQueueByTestedClassMethods(Type type)
         {
             foreach (var method in type.GetMethods())
             {

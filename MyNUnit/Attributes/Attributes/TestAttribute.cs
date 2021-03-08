@@ -5,6 +5,7 @@ namespace MyNUnit.Attributes
     /// <summary>
     /// Attribute is used to mark test methods.
     /// </summary>
+    [AttributeUsage(AttributeTargets.Method)]
     public class TestAttribute : Attribute
     {
         /// <summary>
