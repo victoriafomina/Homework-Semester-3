@@ -82,6 +82,7 @@ namespace MyNUnit
                     .Concat(Directory.EnumerateFiles(path, "*.exe", SearchOption.AllDirectories)).ToList();
             assemblies.RemoveAll(assemblyPath => assemblyPath.Contains("\\MyNUnit.dll"));
             assemblies.RemoveAll(assemblyPath => assemblyPath.Contains("\\MyNUnit.exe"));
+            assemblies.RemoveAll(assemblyPath => assemblyPath.Contains("\\Attributes.dll"));
 
             var classes = assemblies
                 .Select(Assembly.LoadFrom)
