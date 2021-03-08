@@ -12,9 +12,9 @@ namespace SimpleFTPClient
     /// </summary>
     public class Client : IDisposable 
     {
-        private string server;
+        private readonly string server;
 
-        private int port;
+        private readonly int port;
 
         private TcpClient client = null;
 
@@ -29,8 +29,8 @@ namespace SimpleFTPClient
         /// </summary>
         public async void Run()
         {
-            var tcpclient = new TcpClient();
-            await tcpclient.ConnectAsync(server, port);
+            client = new TcpClient();
+            await client.ConnectAsync(server, port);
         }
 
         /// <summary>
@@ -59,9 +59,7 @@ namespace SimpleFTPClient
         {
             var splitedResponse = response.Split(' ');
 
-            int numberOfFilesAndFolders;
-
-            if (!int.TryParse(splitedResponse[0], out numberOfFilesAndFolders))
+            if (!int.TryParse(splitedResponse[0], out var numberOfFilesAndFolders))
             {
                 throw new InvalidResponseException(response);
             }
@@ -106,10 +104,8 @@ namespace SimpleFTPClient
                 throw new FileNotFoundException("File was not found on the server!");
             }
 
-            using (var fileStream = new FileStream(downloadTo + fileName, FileMode.CreateNew))
-            {
-                await reader.BaseStream.CopyToAsync(fileStream);
-            }
+            using var fileStream = new FileStream(downloadTo + fileName, FileMode.CreateNew);
+            await reader.BaseStream.CopyToAsync(fileStream);
         }
 
         /// <summary>
@@ -124,13 +120,12 @@ namespace SimpleFTPClient
         }
 
         /// <summary>
-        /// Stops the client.
+        /// Closes TCP-client and disposes of resources.
         /// </summary>
-        public void Close() => client.Close();
-
-        /// <summary>
-        /// Disposes of resouces.
-        /// </summary>
-        public void Dispose() => client.Dispose();
+        public void Dispose()
+        {
+            client.Close();
+            client.Dispose();
+        }
     }
 }

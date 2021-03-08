@@ -14,8 +14,8 @@ namespace SimpleFTP.Tests
         private Client client;
         private string address;
         private int port;
-        private string root = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName;
-        private string folderPath = "\\..\\..\\";
+        private readonly string root = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName;
+        private readonly string folderPath = "\\..\\..\\";
         private string pathToDownloaded;
 
         [TestInitialize]
@@ -38,10 +38,9 @@ namespace SimpleFTP.Tests
 
             var listRequestTestResult = client.List("Test").Result;
 
-            server.Stop();
-            client.Close();
-
-            Assert.AreEqual("1 .\\Test\\Folder true ", listRequestTestResult);
+            Assert.AreEqual(1, listRequestTestResult.Count);
+            Assert.AreEqual(("1 .\\Test\\Folder", true), 
+                    ($"{listRequestTestResult.Count} {listRequestTestResult[0].Item1}", listRequestTestResult[0].Item2));
         }
 
         [TestMethod]
@@ -53,38 +52,8 @@ namespace SimpleFTP.Tests
 
             var listRequestFolderResult = client.List("Test\\Folder").Result;
 
-            server.Stop();
-            client.Close();
-
-            Assert.AreEqual("1 .\\Test\\Folder\\text.txt false ", listRequestFolderResult);
-        }
-
-        [TestMethod]
-        public void GetTest()
-        {
-            var pathToFile = Path.Combine(pathToDownloaded, "test.txt");
-
-            if (File.Exists(pathToFile))
-            {
-                File.Delete(pathToFile);
-            }
-
-            Task.Run(async () =>
-            {
-                await server.Run();
-
-                client.Run();
-
-                await client.Get("Test\\Folder\\test.txt", pathToDownloaded);
-
-                server.Stop();
-
-                Assert.IsTrue(File.Exists(pathToFile));
-
-                File.Delete(pathToFile);
-
-                client.Close();
-            });
+            Assert.AreEqual(1, listRequestFolderResult.Count);
+            Assert.AreEqual(("1 .\\Test\\Folder\\text.txt", false), ($"{listRequestFolderResult.Count} {listRequestFolderResult[0].Item1}", listRequestFolderResult[0].Item2));
         }
 
         [TestMethod]
@@ -96,9 +65,13 @@ namespace SimpleFTP.Tests
             client.Run();
 
             client.Get("olololo", pathToDownloaded).Wait();
+        }
 
-            server.Stop();
-            client.Close();
+        [TestCleanup]
+        public void CleanUp()
+        {
+            server.Dispose();
+            client.Dispose();
         }
     }
 }

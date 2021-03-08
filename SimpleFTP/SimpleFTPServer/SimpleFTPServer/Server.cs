@@ -11,10 +11,10 @@ namespace SimpleFTPServer
     /// Server that handles two requests: List (listing files in the server's directory) and Get (downloading a
     /// file from the server's directory).
     /// </summary>
-    public class Server
+    public class Server : IDisposable
     {
-        private TcpListener listener;
-        private CancellationTokenSource cancellationToken;
+        private readonly TcpListener listener;
+        private readonly CancellationTokenSource cancellationToken;
 
         public Server(int port)
         {
@@ -39,7 +39,7 @@ namespace SimpleFTPServer
         /// <summary>
         /// Stops the server.
         /// </summary>
-        public void Stop() => listener.Stop();
+        public void Dispose() => listener.Stop();
 
         /// <summary>
         /// Handles a client.
@@ -48,14 +48,17 @@ namespace SimpleFTPServer
         {
             Task.Run(async () =>
             {
-                while (!cancellationToken.IsCancellationRequested)
+                using (client)
                 {
-                    var reader = new StreamReader(client.GetStream());
-                    var writer = new StreamWriter(client.GetStream()) { AutoFlush = true };
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        var reader = new StreamReader(client.GetStream());
+                        var writer = new StreamWriter(client.GetStream()) { AutoFlush = true };
 
-                    var request = await reader.ReadLineAsync();
+                        var request = await reader.ReadLineAsync();
 
-                    await RequestHandler.HandleRequest(request, writer);
+                        await RequestHandler.HandleRequest(request, writer);
+                    }
                 }
             });
         }

@@ -99,10 +99,8 @@ namespace SimpleFTPServer
             var size = new FileInfo(path).Length;
             await writer.WriteLineAsync($"{size} ");
 
-            using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.ReadWrite))
-            {
-                await fileStream.CopyToAsync(writer.BaseStream);
-            }
+            using var fileStream = new FileStream(path, FileMode.Create, FileAccess.ReadWrite);
+            await fileStream.CopyToAsync(writer.BaseStream);
         }
 
         /// <summary>
