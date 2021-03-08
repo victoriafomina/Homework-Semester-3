@@ -182,6 +182,10 @@ namespace MyNUnit
                 if (e.InnerException.GetType() == attribute.ExpectedException)
                 {
                     stopwatch.Stop();
+                    var timeElapsed = stopwatch.Elapsed;
+                    var testMethodInfo = new TestMethodInfo(method.Name);
+                    testMethodInfo.SetInfoPassedTest(true, attribute.ExpectedException, e.GetType(), timeElapsed);
+                    testsResults[type].Enqueue(testMethodInfo);
                 }
             }
             finally

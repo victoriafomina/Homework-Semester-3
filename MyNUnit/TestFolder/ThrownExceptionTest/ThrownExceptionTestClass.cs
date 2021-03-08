@@ -5,7 +5,7 @@ namespace ThrownExceptionTest
 {
     public class ThrownExceptionTestClass
     {
-        [Test("Ignore it because ignore it", typeof(AggregateException))]
+        [Test(null, typeof(AggregateException))]
         public void ThrowingExceptionMethod()
         {
             throw new AggregateException();
