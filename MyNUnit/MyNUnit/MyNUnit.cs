@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Reflection;
-using System.IO;
+﻿using MyNUnit.Attributes;
+using System;
 using System.Collections.Concurrent;
-using MyNUnit.Attributes;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace MyNUnit
 {
@@ -45,7 +45,8 @@ namespace MyNUnit
         {
             var classes = GetClasses(path);
 
-            Parallel.ForEach(classes, someClass => {
+            Parallel.ForEach(classes, someClass =>
+            {
                 ClassTests(someClass);
             });
 
@@ -101,7 +102,7 @@ namespace MyNUnit
         private static void RunTests()
         {
             var tasks = new List<Task>();
-            
+
             foreach (var type in testedMethods.Keys)
             {
                 var task = Task.Run(() =>
@@ -188,7 +189,7 @@ namespace MyNUnit
                 stopwatch.Stop();
                 var timeElapsed = stopwatch.Elapsed;
                 var testMethodInfo = new TestMethodInfo(method.Name);
-                testMethodInfo.SetInfoPassedTest(false, attribute.ExpectedException, null, timeElapsed);
+                testMethodInfo.SetInfoPassedTest(true, attribute.ExpectedException, null, timeElapsed);
                 testsResults[type].Enqueue(testMethodInfo);
             }
 

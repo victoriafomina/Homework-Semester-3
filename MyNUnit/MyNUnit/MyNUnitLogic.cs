@@ -67,7 +67,8 @@ namespace MyNUnit
         {
             foreach (var method in type.GetMethods())
             {
-                Task task = Task.Run(() => {
+                var task = Task.Run(() =>
+                {
                     if (method.GetCustomAttribute<AfterAttribute>() != null)
                     {
                         AddMethodToQueue(method, AfterTests);
@@ -83,7 +84,7 @@ namespace MyNUnit
                     else if (method.GetCustomAttribute<BeforeClassAttribute>() != null)
                     {
                         AddMethodToQueue(method, BeforeClassTests);
-                    }                    
+                    }
                     else if (method.GetCustomAttribute<TestAttribute>() != null)
                     {
                         AddMethodToQueue(method, Tests);
