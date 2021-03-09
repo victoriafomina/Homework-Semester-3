@@ -50,6 +50,11 @@ namespace MyNUnit
         public ConcurrentQueue<MethodInfo> Tests { get; private set; }
 
         /// <summary>
+        /// Count of the tested methods.
+        /// </summary>
+        public int TestsCount => Tests.Count;
+
+        /// <summary>
         /// Adds method to the queue.
         /// </summary>
         private void AddMethodToQueue(MethodInfo method, ConcurrentQueue<MethodInfo> queue) => queue.Enqueue(method);

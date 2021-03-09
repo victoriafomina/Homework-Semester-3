@@ -6,11 +6,15 @@ namespace MyNUnitTests
     public class MyNUnitTests
     {
         private readonly string basePath = "..\\..\\..\\..\\TestFolder\\";
+        private MyNUnit.MyNUnit testRunner;
+
+        [TestInitialize]
+        public void Initialize() => testRunner = new MyNUnit.MyNUnit();
 
         [TestMethod]
         public void SmokeTest()
         {
-            var testInfo = MyNUnit.MyNUnit.Run($"{basePath}SmokeTest\\Assembly");
+            var testInfo = testRunner.Run($"{basePath}SmokeTest\\Assembly");
             Assert.AreEqual(1, testInfo.Count);
             var testMethodsInfo = testInfo.Values;
 
@@ -29,7 +33,7 @@ namespace MyNUnitTests
         [TestMethod]
         public void ThrownExceptionTest()
         {
-            var testInfo = MyNUnit.MyNUnit.Run($"{basePath}ThrownExceptionTest\\Assembly");
+            var testInfo = testRunner.Run($"{basePath}ThrownExceptionTest\\Assembly");
             Assert.AreEqual(1, testInfo.Count);
             var testMethodsInfo = testInfo.Values;
 
@@ -49,7 +53,7 @@ namespace MyNUnitTests
         [TestMethod]
         public void IgnoreTest()
         {
-            var testInfo = MyNUnit.MyNUnit.Run($"{basePath}IgnoreMethodTest\\Assembly");
+            var testInfo = testRunner.Run($"{basePath}IgnoreMethodTest\\Assembly");
             Assert.AreEqual(1, testInfo.Count);
             var testMethodsInfo = testInfo.Values;
             var count = 0;

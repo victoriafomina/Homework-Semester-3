@@ -18,18 +18,18 @@ namespace MyNUnit
         /// <summary>
         /// Tests results.
         /// </summary>
-        private static ConcurrentDictionary<Type, ConcurrentQueue<TestMethodInfo>> testsResults;
+        private ConcurrentDictionary<Type, ConcurrentQueue<TestMethodInfo>> testsResults;
 
         /// <summary>
         /// Methods to test.
         /// </summary>
-        private static ConcurrentDictionary<Type, MyNUnitLogic> testedMethods;
+        private ConcurrentDictionary<Type, MyNUnitLogic> testedMethods;
 
         /// <summary>
         /// Runs tests.
         /// </summary>
         /// <returns>the result of test running</returns>
-        public static Dictionary<Type, List<TestMethodInfo>> Run(string path)
+        public Dictionary<Type, List<TestMethodInfo>> Run(string path)
         {
             testsResults = new ConcurrentDictionary<Type, ConcurrentQueue<TestMethodInfo>>();
             testedMethods = new ConcurrentDictionary<Type, MyNUnitLogic>();
@@ -41,7 +41,7 @@ namespace MyNUnit
         /// <summary>
         /// Runs tests by path.
         /// </summary>
-        private static void RunTestsByPath(string path)
+        private void RunTestsByPath(string path)
         {
             var classes = GetClasses(path);
 
@@ -56,7 +56,7 @@ namespace MyNUnit
         /// <summary>
         /// Gets the report about tests.
         /// </summary>
-        private static Dictionary<Type, List<TestMethodInfo>> GetReportAboutTests()
+        private Dictionary<Type, List<TestMethodInfo>> GetReportAboutTests()
         {
             var result = new Dictionary<Type, List<TestMethodInfo>>();
 
@@ -76,7 +76,7 @@ namespace MyNUnit
         /// <summary>
         /// Gets all the classes from the assemblies by path.
         /// </summary>
-        private static IEnumerable<Type> GetClasses(string path)
+        private IEnumerable<Type> GetClasses(string path)
         {
             var assemblies = Directory.EnumerateFiles(path, "*.dll", SearchOption.AllDirectories)
                     .Concat(Directory.EnumerateFiles(path, "*.exe", SearchOption.AllDirectories)).ToList();
@@ -95,12 +95,12 @@ namespace MyNUnit
         /// <summary>
         /// Loads tested methods.
         /// </summary>
-        private static void ClassTests(Type type) => testedMethods.TryAdd(type, new MyNUnitLogic(type));
+        private void ClassTests(Type type) => testedMethods.TryAdd(type, new MyNUnitLogic(type));
 
         /// <summary>
         /// Runs all the tests.
         /// </summary>
-        private static void RunTests()
+        private void RunTests()
         {
             var tasksClasses = new List<Task>();
 
@@ -147,8 +147,6 @@ namespace MyNUnit
 
                 tasksClasses.Add(taskClass);
             }
-
-            Task.WaitAll(tasksClasses.ToArray());
         }
 
         /// <summary>
@@ -169,7 +167,7 @@ namespace MyNUnit
         /// <summary>
         /// Runs the test method.
         /// </summary>
-        private static void RunTestMethod(Type type, MethodInfo method)
+        private void RunTestMethod(Type type, MethodInfo method)
         {
             var attribute = method.GetCustomAttribute<TestAttribute>();
 
@@ -227,7 +225,64 @@ namespace MyNUnit
         /// <summary>
         /// Runs test that is needed for testing but is not marked with the TestAttribute.
         /// </summary>
-        private static void RunNonTestMethod(MethodInfo method, object instance) =>
+        private void RunNonTestMethod(MethodInfo method, object instance) =>
                 method.Invoke(instance, null);
+
+        /// <summary>
+        /// Prints tests results.
+        /// </summary>
+        public void PrintResult()
+        {
+            Console.WriteLine($"Number of classes to test: {testedMethods.Keys.Count}\n");
+
+            var methodsCount = 0;
+
+            foreach (var testedClass in testedMethods.Keys)
+            {
+                methodsCount += testedMethods[testedClass].TestsCount;
+            }
+
+            Console.WriteLine($"Number of methods to test: {methodsCount}");
+
+            foreach (var testedClass in testsResults.Keys)
+            {
+                var test = testsResults;
+
+                foreach (var testInfo in testsResults[testedClass])
+                {
+                    Console.WriteLine("---------------------------------------------");
+                    Console.WriteLine($"Class: {testedClass}\n");
+                    Console.WriteLine($"Method: {testInfo.Name}\n");
+
+                    if (testInfo.Ignored)
+                    {
+                        Console.WriteLine($"Ignored {testInfo.Name}, message: {testInfo.IgnoreMessage}");
+                        continue;
+                    }
+
+                    if (testInfo.ExpectedException == null && testInfo.ThrownException != null)
+                    {
+                        Console.WriteLine($"Unexpected exception: {testInfo.ThrownException}");
+                    }
+
+                    if (testInfo.ExpectedException != null && testInfo.ThrownException != null)
+                    {
+                        Console.WriteLine($"Expected exception: {testInfo.ExpectedException}");
+                        Console.WriteLine($"Thrown exception: {testInfo.ThrownException}");
+                    }
+
+                    Console.WriteLine($"Time to test: {testInfo.Time}\n");
+
+                    if (testInfo.Passed)
+                    {
+                        Console.WriteLine($"Passed {testInfo.Name} test");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Did not pass {testInfo.Name} test");
+                    }
+                }
+            }
+        }
     }
 }
