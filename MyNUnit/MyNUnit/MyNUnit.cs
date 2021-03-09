@@ -194,25 +194,19 @@ namespace MyNUnit
             {
                 method.Invoke(instance, null);
                 stopwatch.Stop();
-            }
-            catch (Exception e)
-            {
-                if (e.InnerException.GetType() == attribute.ExpectedException)
-                {
-                    stopwatch.Stop();
-                    var timeElapsed = stopwatch.Elapsed;
-                    var testMethodInfo = new TestMethodInfo(method.Name);
-                    testMethodInfo.SetInfoPassedTest(true, attribute.ExpectedException, e.GetType(), timeElapsed);
-                    testsResults[type].Enqueue(testMethodInfo);
-                }
-            }
-            finally
-            {
-                stopwatch.Stop();
                 var timeElapsed = stopwatch.Elapsed;
                 var testMethodInfo = new TestMethodInfo(method.Name);
                 var passedTest = attribute.ExpectedException == null;
                 testMethodInfo.SetInfoPassedTest(passedTest, attribute.ExpectedException, null, timeElapsed);
+                testsResults[type].Enqueue(testMethodInfo);
+            }
+            catch (Exception e)
+            {
+                stopwatch.Stop();
+                var timeElapsed = stopwatch.Elapsed;
+                var testMethodInfo = new TestMethodInfo(method.Name);
+                var passedTest = e.InnerException.GetType() == attribute.ExpectedException;
+                testMethodInfo.SetInfoPassedTest(passedTest, attribute.ExpectedException, e.GetType(), timeElapsed);
                 testsResults[type].Enqueue(testMethodInfo);
             }
 
