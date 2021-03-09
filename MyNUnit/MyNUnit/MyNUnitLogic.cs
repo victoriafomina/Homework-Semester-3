@@ -50,7 +50,7 @@ namespace MyNUnit
         public ConcurrentQueue<MethodInfo> Tests { get; private set; }
 
         /// <summary>
-        /// Count of the tested methods.
+        /// Counts tested methods.
         /// </summary>
         public int TestsCount => Tests.Count;
 

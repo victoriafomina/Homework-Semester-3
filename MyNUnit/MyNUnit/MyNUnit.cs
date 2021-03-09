@@ -84,7 +84,7 @@ namespace MyNUnit
             assemblies.RemoveAll(assemblyPath => assemblyPath.Contains("\\MyNUnit.exe"));
             assemblies.RemoveAll(assemblyPath => assemblyPath.Contains("\\Attributes.dll"));
 
-            var classes = assemblies
+            var classes = assemblies.AsParallel()
                 .Select(Assembly.LoadFrom)
                 .SelectMany(x => x.ExportedTypes)
                 .Where(x => x.IsClass);
@@ -169,6 +169,8 @@ namespace MyNUnit
         /// </summary>
         private void RunTestMethod(Type type, MethodInfo method)
         {
+            MethodCorectnessChecker(method);
+
             var attribute = method.GetCustomAttribute<TestAttribute>();
 
             if (attribute.Ignored)
@@ -184,6 +186,7 @@ namespace MyNUnit
 
             foreach (var beforeTest in testedMethods[type].BeforeTests)
             {
+                MethodCorectnessChecker(beforeTest);
                 RunNonTestMethod(beforeTest, instance);
             }
 
@@ -212,7 +215,29 @@ namespace MyNUnit
 
             foreach (var afterTest in testedMethods[type].AfterTests)
             {
+                MethodCorectnessChecker(afterTest);
                 RunNonTestMethod(afterTest, instance);
+            }
+        }
+
+        /// <summary>
+        /// Checks if the method is valid for testing.
+        /// </summary>
+        private void MethodCorectnessChecker(MethodInfo method)
+        {
+            if (method.IsStatic)
+            {
+                throw new FormatException("Method can not be static!");
+            }
+
+            if (method.GetParameters().Length > 0)
+            {
+                throw new FormatException("Method can not have parameters!");
+            }
+
+            if (method.ReturnType != typeof(void))
+            {
+                throw new FormatException("Method can not have a return value!");
             }
         }
 
