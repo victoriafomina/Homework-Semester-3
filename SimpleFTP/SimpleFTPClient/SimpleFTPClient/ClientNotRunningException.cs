@@ -3,14 +3,8 @@
 namespace SimpleFTPClient
 {
     /// <summary>
-    /// The exception that is thrown when the client is not running.
+    /// The exception that is thrown when the client is not running while trying to make requests.
     /// </summary>
     [Serializable]
-    public class ClientNotRunningException : Exception
-    {
-        /// <summary>
-        /// Initializes a new instance of the ClientNotRunningException class.
-        /// </summary>
-        public ClientNotRunningException() : base() { }
-    }
+    public class ClientNotRunningException : Exception { }
 }

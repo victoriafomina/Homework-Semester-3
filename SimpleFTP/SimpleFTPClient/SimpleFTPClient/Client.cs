@@ -57,9 +57,9 @@ namespace SimpleFTPClient
         /// <exception cref="DirectoryNotFoundException">Thrown when request directory was not found.</exception>
         private List<(string, bool)> ParseListResponse(string response)
         {
-            var splitedResponse = response.Split(' ');
+            var splitResponse = response.Split(' ');
 
-            if (!int.TryParse(splitedResponse[0], out var numberOfFilesAndFolders))
+            if (!int.TryParse(splitResponse[0], out var numberOfFilesAndFolders))
             {
                 throw new InvalidResponseException(response);
             }
@@ -73,7 +73,7 @@ namespace SimpleFTPClient
 
             for (var i = 1; i < numberOfFilesAndFolders * 2; i += 2)
             {
-                parsedResponse.Add((splitedResponse[i], bool.Parse(splitedResponse[i + 1])));
+                parsedResponse.Add((splitResponse[i], bool.Parse(splitResponse[i + 1])));
             }
 
             return parsedResponse;
