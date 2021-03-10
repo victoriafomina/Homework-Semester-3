@@ -16,26 +16,31 @@ namespace GUIForFTP
         /// <summary>
         /// Initializes an instance of the ClientViewModel.
         /// </summary>
-        public ClientViewModel(string server, int port)
+        public ClientViewModel()
         {
             ElementsInFolder = new ObservableCollection<ListViewElementModel>();
-            client = new Client(server, port);
+            client = new Client();
         }
 
         /// <summary>
         /// Gets files and folders from the directory where the server is running.
         /// </summary>
-        public async Task GetFilesAndFoldersFromBaseServersDirectoryAsync()
-        {
-            client.Run();
+        public async Task GetFilesAndFoldersFromBaseServersDirectoryAsync(string server, int port)
+        { 
+            client.Run(server, port);
             var result = await client.List("current");
-            FillElementsInFolder(result);
-        }        
+            FillWithFilesAndFolders(result);
+        }
 
         /// <summary>
-        /// Connects the client with a server.
+        /// Gets files and folders from the one-step upper directory.
         /// </summary>
-        public void ConnectServer() => client.Run();
+        public async Task GetFilesFromUpperDirectoryAsync(string server, int port)
+        { 
+            client.Run(server, port);
+            var result = await client.List("..\\");
+            FillWithFilesAndFolders(result);
+        }
 
         /// <summary>
         /// Returns a collection that is binded with a ListView that shows files and folders in directory.
@@ -47,7 +52,10 @@ namespace GUIForFTP
         /// </summary>
         public void Dispose() => client.Dispose();
 
-        private void FillElementsInFolder(List<(string, bool)> elements)
+        /// <summary>
+        /// Fills ObservableCollection with the files and folders.
+        /// </summary>
+        private void FillWithFilesAndFolders(List<(string, bool)> elements)
         {
             ElementsInFolder.Clear();
 

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using GUIForFTP;
+using System.Windows;
 
 namespace SimpleFTPClient
 {
@@ -12,22 +14,12 @@ namespace SimpleFTPClient
     /// </summary>
     public class Client : IDisposable 
     {
-        private readonly string server;
-
-        private readonly int port;
-
         private TcpClient client = null;
-
-        public Client(string server, int port)
-        {
-            this.server = server;
-            this.port = port;
-        }
 
         /// <summary>
         /// Runs the client.
         /// </summary>
-        public async void Run()
+        public async void Run(string server, int port)
         {
             client = new TcpClient();
             await client.ConnectAsync(server, port);
@@ -37,15 +29,26 @@ namespace SimpleFTPClient
         /// Does listing.
         /// </summary>
         /// <exception cref="ClientNotRunningException">Thrown when the client is not running.</exception>
+        /// <exception cref="AccessToDirectoryOnServerDenied">Exception is thrown when the client writer gets "denied" string from server.</exception>
         public async Task<List<(string, bool)>> List(string path)
         {
-            CheckRunning();
+            if (!CheckRunning())
+            {
+                throw new ClientNotRunningException();
+            }
 
             var writer = new StreamWriter(client.GetStream()) { AutoFlush = true };
             var reader = new StreamReader(client.GetStream());
 
             await writer.WriteLineAsync("1" + path);
             var response = await reader.ReadLineAsync();
+
+            MessageBox.Show($"{response}");
+
+            if (response == "denied")
+            {
+                throw new AccessToDirectoryOnServerDenied();
+            }
 
             return ParseListResponse(response);
         }
@@ -85,7 +88,10 @@ namespace SimpleFTPClient
         /// <exception cref="ClientNotRunningException">Thrown when the client is not running.</exception>
         public async Task Get(string downloadFrom, string downloadTo)
         {
-            CheckRunning();
+            if (!CheckRunning())
+            {
+                throw new ClientNotRunningException();
+            }
 
             var temp = downloadFrom.Split('\\');
             var fileName = temp[temp.Length - 1];
@@ -113,13 +119,7 @@ namespace SimpleFTPClient
         /// <summary>
         /// Checks if the client is running.
         /// </summary>
-        private void CheckRunning()
-        {
-            if (client == null || !client.Connected)
-            {
-                throw new ClientNotRunningException();
-            }
-        }
+        public bool CheckRunning() => client != null && client.Connected;
 
         /// <summary>
         /// Closes TCP-client and disposes of resources.

@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using SimpleFTPClient;
 
 namespace GUIForFTP
 {
@@ -30,39 +31,60 @@ namespace GUIForFTP
 
         private void ConnectServer_Click(object sender, RoutedEventArgs e)
         {
-            var correct = true;
+            //var correct = true;
 
-            if (Uri.CheckHostName(server.Text) == UriHostNameType.Unknown)
-            {
-                MessageBox.Show("Host name is not correct!");
-                correct = false;
-            }
+            //if (Uri.CheckHostName(server.Text) == UriHostNameType.Unknown)
+            //{
+            //    MessageBox.Show("Host name is not correct!");
+            //    correct = false;
+            //}
 
-            if (!int.TryParse(port.Text, out _))
-            {
-                MessageBox.Show("Port must be a numeral value!");
-                correct = false;
-            }
+            //if (!int.TryParse(port.Text, out _))
+            //{
+            //    MessageBox.Show("Port must be a numeral value!");
+            //    correct = false;
+            //}
 
-            if ((sender as Button).Background == Brushes.Red)
-            {
-                (sender as Button).Background = Brushes.Green;
-                (sender as Button).Content = "Run";
-                clientViewModel.Dispose();
-                MessageBox.Show("Client disconnected from server!");
-            }
-            else if (correct)
-            {
-                (sender as Button).Background = Brushes.Red;
-                (sender as Button).Content = "Stop";
-                clientViewModel.ConnectServer();
-                MessageBox.Show("Client connected to server!");
-            }
+            //if ((sender as Button).Background == Brushes.Red)
+            //{
+            //    (sender as Button).Background = Brushes.Green;
+            //    (sender as Button).Content = "Run";
+            //    clientViewModel.Dispose();
+            //    MessageBox.Show("Client disconnected from server!");
+            //}
+            //else if (correct)
+            //{
+            //    (sender as Button).Background = Brushes.Red;
+            //    (sender as Button).Content = "Stop";
+            //    clientViewModel.
+            //    MessageBox.Show("Client connected to server!");
+            //}
         }
 
-        private void FolderUp_Click(object sender, RoutedEventArgs e)
-        {
+        private bool CheckServerCorectness() =>
+                Uri.CheckHostName(server.Text) != UriHostNameType.Unknown;
 
+        private bool CheckPortCorectness() => int.TryParse(port.Text, out _);
+
+        private void PortOrHostNameIsIncorrect() => MessageBox.Show("Port or hostname is incorrect!");
+
+        private async void FolderUp_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (CheckPortCorectness() && CheckServerCorectness())
+                {
+                    await clientViewModel.GetFilesFromUpperDirectoryAsync(server.Text, int.Parse(port.Text));
+
+                    return;
+                }
+
+                PortOrHostNameIsIncorrect();  
+            }
+            catch (AccessToDirectoryOnServerDenied)
+            {
+                MessageBox.Show("You don't have an access to upper directories!");
+            }
         }
 
         private void SaveAllFilesInFolder_Click(object sender, RoutedEventArgs e)
@@ -72,10 +94,10 @@ namespace GUIForFTP
 
         private async void InitFillFilesAndFoldersListView()
         {
-            clientViewModel = new ClientViewModel("127.0.0.1", 6666);
+            clientViewModel = new ClientViewModel();
             elementsInFolder.ItemsSource = clientViewModel.ElementsInFolder;
-            clientViewModel.ConnectServer();
-            await clientViewModel.GetFilesAndFoldersFromBaseServersDirectoryAsync();
+
+            //await clientViewModel.GetFilesAndFoldersFromBaseServersDirectoryAsync("127.0.0.1", 6666);
         }
     }
 }

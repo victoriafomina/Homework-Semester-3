@@ -29,7 +29,6 @@ namespace SimpleFTPClient
         /// </summary>
         public async void Run()
         {
-            client = new TcpClient();
             await client.ConnectAsync(server, port);
         }
 

@@ -24,13 +24,14 @@ namespace SimpleFTPServer
             }
             catch (InvalidRequestBodyException)
             {
+                Console.WriteLine($"To client: {errorMessage}");
                 await writer.WriteLineAsync(errorMessage);
                 return;
             }
 
             if (parsedRequest.Item2.ToLower() == "current")
             {
-                Console.WriteLine($"{parsedRequest.Item1} {parsedRequest.Item2}");
+                Console.WriteLine($"From client: {parsedRequest.Item1} {parsedRequest.Item2}");
                 var currentDir = Directory.GetCurrentDirectory();
                 await List(currentDir, currentDir.Length, writer);
 
@@ -38,9 +39,17 @@ namespace SimpleFTPServer
             }
 
             var root = Path.GetFullPath("..\\..\\..\\..\\..\\");
+            
             root = root.Remove(root.Length - 1);
-
             var path = Path.Combine(root, parsedRequest.Item2);
+
+            if (Path.GetFullPath(root).Contains(Path.GetFullPath(path)))
+            {
+                Console.WriteLine($"To client: denied");
+                await writer.WriteAsync("denied");
+
+                return;
+            }
 
             switch (parsedRequest.Item1)
             {
@@ -65,6 +74,7 @@ namespace SimpleFTPServer
             if (!Directory.Exists(path))
             {
                 await writer.WriteLineAsync("-1");
+                Console.WriteLine("To client: -1");
                 return;
             }
 

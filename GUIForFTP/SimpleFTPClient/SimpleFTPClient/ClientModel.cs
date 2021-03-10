@@ -6,7 +6,7 @@ using SimpleFTPClient;
 
 namespace SimpleFTPClient
 {
-    public class ClientViewModel
+    public class ClientModel
     {
         private Client client = null;
 
