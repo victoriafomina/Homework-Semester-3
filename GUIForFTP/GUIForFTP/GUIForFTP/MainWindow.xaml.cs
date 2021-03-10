@@ -85,7 +85,7 @@ namespace GUIForFTP
 
                 MessageBox.Show("Port and/or hostname are incorrect!");
             }
-            catch (AccessToDirectoryOnServerDeniedException)
+            catch (CouldNotAccessDirUpperThanRootException)
             {
                 MessageBox.Show("You don't have an access to upper directories!");
             }
