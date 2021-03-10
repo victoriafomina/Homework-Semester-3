@@ -22,7 +22,14 @@
         /// </summary>
         public static void Up()
         {
-            if (Balance > 0)
+            if (Balance == 1)
+            {
+                Path = "";
+                --Balance;
+
+                return;
+            }
+            else if (Balance > 0)
             {
                 var index = Path.LastIndexOf("\\");
                 Path = Path.Remove(index);
@@ -39,18 +46,7 @@
         /// </summary>
         public static void Down(string dirName)
         {
-            string formattedDirName;
-
-            if (Path == "")
-            {
-                formattedDirName = dirName.Substring(2);
-            }
-            else
-            {
-                formattedDirName = dirName.Substring(1);
-            }
-
-            Path += formattedDirName;
+            Path = dirName.Substring(2);
             ++Balance;
         }
     }

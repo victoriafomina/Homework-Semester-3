@@ -12,6 +12,7 @@ namespace GUIForFTP
     public class ClientViewModel : IDisposable
     {
         private Client client;
+        private readonly string serverRootDir = "current";
 
         /// <summary>
         /// Initializes an instance of the ClientViewModel.
@@ -33,7 +34,7 @@ namespace GUIForFTP
 
             if (Direction.Current == direction)
             {
-                result = await client.List("current");
+                result = await client.List(serverRootDir);
                 FillWithFilesAndFolders(result);
             }
             else if (Direction.Down == direction)
@@ -41,6 +42,12 @@ namespace GUIForFTP
                 PathTracker.Down(dir);
                 var path = PathTracker.Path;
                 result = await client.List($"{path}");
+                FillWithFilesAndFolders(result);
+            }
+            else if (PathTracker.Balance == 1)
+            {
+                PathTracker.Up();
+                result = await client.List(serverRootDir);
                 FillWithFilesAndFolders(result);
             }
             else if (PathTracker.Balance > 0)

@@ -71,14 +71,21 @@ namespace GUIForFTP
             {
                 if (CheckServerAndPortCorectness())
                 {
-                    await clientViewModel.GetListOfFilesAndFoldersFromDirectoryAsync(Direction.Up, "", server.Text, int.Parse(port.Text));
+                    try
+                    {
+                        await clientViewModel.GetListOfFilesAndFoldersFromDirectoryAsync(Direction.Up, "", server.Text, int.Parse(port.Text));
+                    }
+                    catch (AccessToDirectoryOnServerDeniedException)
+                    {
+                        MessageBox.Show("You don't have an access to upper directories!");
+                    }
 
                     return;
                 }
 
                 MessageBox.Show("Port and/or hostname are incorrect!");
             }
-            catch (AccessToDirectoryOnServerDenied)
+            catch (AccessToDirectoryOnServerDeniedException)
             {
                 MessageBox.Show("You don't have an access to upper directories!");
             }

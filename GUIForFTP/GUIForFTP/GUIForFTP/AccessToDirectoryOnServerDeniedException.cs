@@ -6,5 +6,5 @@ namespace SimpleFTPClient
     /// Exception is thrown when the client writer gets "denied" string from server.
     /// </summary>
     [Serializable]
-    public class AccessToDirectoryOnServerDenied : Exception { }
+    public class AccessToDirectoryOnServerDeniedException : Exception { }
 }
