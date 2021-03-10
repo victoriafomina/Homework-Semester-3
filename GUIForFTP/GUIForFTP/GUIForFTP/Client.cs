@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using GUIForFTP;
 using System.Windows;
 
 namespace SimpleFTPClient
@@ -36,6 +35,7 @@ namespace SimpleFTPClient
 
             if (!CheckRunning())
             {
+                MessageBox.Show("CL NOT RUNNING!");
                 throw new ClientNotRunningException();
             }
 

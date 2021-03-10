@@ -24,23 +24,36 @@ namespace GUIForFTP
         }
 
         /// <summary>
-        /// Gets files and folders from the directory where the server is running.
-        /// </summary>
-        public async Task GetFilesAndFoldersFromBaseServersDirectoryAsync(string server, int port)
-        { 
-            client.Run(server, port);
-            var result = await client.List("current");
-            FillWithFilesAndFolders(result);
-        }
-
-        /// <summary>
         /// Gets files and folders from the one-step upper directory.
         /// </summary>
-        public async Task GetFilesFromUpperDirectoryAsync(string server, int port)
-        { 
+        public async Task GetListOfFilesAndFoldersFromDirectoryAsync(Direction direction, string dir, string server, int port)
+        {
             client.Run(server, port);
-            var result = await client.List("..\\");
-            FillWithFilesAndFolders(result);
+            List<(string, bool)> result;
+
+            if (Direction.Current == direction)
+            {
+                result = await client.List("current");
+                FillWithFilesAndFolders(result);
+            }
+            else if (Direction.Down == direction)
+            {
+                PathTracker.Down(dir);
+                var path = PathTracker.Path;
+                result = await client.List($"{path}");
+                FillWithFilesAndFolders(result);
+            }
+            else if (PathTracker.Balance > 0)
+            {
+                PathTracker.Up();
+                var path = PathTracker.Path;
+                result = await client.List($"{path}");
+                FillWithFilesAndFolders(result);
+            }
+            else
+            {
+                throw new CouldNotAccessDirUpperThanRootException();
+            }
         }
 
         /// <summary>
@@ -76,5 +89,15 @@ namespace GUIForFTP
                 ElementsInFolder.Add(new ListViewElementModel(element));
             }
         }
+    }
+
+    /// <summary>
+    /// Contains three possible directions in the folder tracking.
+    /// </summary>
+    public enum Direction
+    {
+        Up,
+        Down,
+        Current
     }
 }

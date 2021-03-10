@@ -93,7 +93,7 @@
                 <ColumnDefinition Width="3*" />
             </Grid.ColumnDefinitions>
             <TextBlock Text="Folder to which download:" Grid.Column="0" Margin="25, 0, 0, 0"></TextBlock>
-            <TextBox Text="..//..//" Grid.Column="1" Background="LightYellow" Margin="0, 0, 25, 0"></TextBox>
+            <TextBox Name="downloadTo" Text="..//..//" Grid.Column="1" Background="LightYellow" Margin="0, 0, 25, 0"></TextBox>
         </Grid>
         <TextBlock Text="Downloads information" HorizontalAlignment="Center"/>
         <ScrollViewer>

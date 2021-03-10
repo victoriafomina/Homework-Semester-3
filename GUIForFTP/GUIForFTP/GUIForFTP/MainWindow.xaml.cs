@@ -1,18 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using SimpleFTPClient;
 
 namespace GUIForFTP
@@ -65,25 +54,29 @@ namespace GUIForFTP
             //}
         }
 
-        private bool CheckServerCorectness() =>
-                Uri.CheckHostName(server.Text) != UriHostNameType.Unknown;
+        private bool CheckServerAndPortCorectness() =>
+                Uri.CheckHostName(server.Text) != UriHostNameType.Unknown && int.TryParse(port.Text, out _);
 
-        private bool CheckPortCorectness() => int.TryParse(port.Text, out _);
-
-        private void PortOrHostNameIsIncorrect() => MessageBox.Show("Port or hostname is incorrect!");
+        private void CheckAndHandlePortAndHostNameCorectness()
+        {
+            if (CheckServerAndPortCorectness())
+            {
+                MessageBox.Show("Port or hostname is incorrect!");
+            }
+        }
 
         private async void FolderUp_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (CheckPortCorectness() && CheckServerCorectness())
+                if (CheckServerAndPortCorectness())
                 {
-                    await clientViewModel.GetFilesFromUpperDirectoryAsync(server.Text, int.Parse(port.Text));
+                    await clientViewModel.GetListOfFilesAndFoldersFromDirectoryAsync(Direction.Up, "", server.Text, int.Parse(port.Text));
 
                     return;
                 }
 
-                PortOrHostNameIsIncorrect();  
+                MessageBox.Show("Port and/or hostname are incorrect!");
             }
             catch (AccessToDirectoryOnServerDenied)
             {
@@ -91,14 +84,24 @@ namespace GUIForFTP
             }
         }
 
-        private void ElementsInFolder_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private async void ElementsInFolder_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var item = ((FrameworkElement)e.OriginalSource).DataContext as ListViewElementModel;
 
-            if (item != null)
+            if (item.IsDirectory && CheckServerAndPortCorectness())
             {
-                MessageBox.Show($"Item: {item}");
+                await clientViewModel.GetListOfFilesAndFoldersFromDirectoryAsync(Direction.Down, item.Path, server.Text, int.Parse(port.Text));
             }
+            else if (CheckServerAndPortCorectness() && Directory.Exists(downloadTo.Text))
+            {
+                clientViewModel.DownloadsInfo.Add($"Trying to start to download \"{item.Path}\"");
+                await clientViewModel.DownloadFileFromServer(item.Path, downloadTo.Text);
+                clientViewModel.DownloadsInfo.Add($"\"{item.Path}\" downloaded");
+            }
+            else
+            {
+                // message box (port and host name bla bla bla) or (ne sushetv directoriya)
+            }    
         }
 
         private void SaveAllFilesInFolder_Click(object sender, RoutedEventArgs e)
@@ -107,6 +110,6 @@ namespace GUIForFTP
         }
 
         private async void InitFillFilesAndFoldersListView() =>
-                await clientViewModel.GetFilesAndFoldersFromBaseServersDirectoryAsync("127.0.0.1", 6666);
+                await clientViewModel.GetListOfFilesAndFoldersFromDirectoryAsync(Direction.Current, "", "127.0.0.1", 6666);
     }
 }

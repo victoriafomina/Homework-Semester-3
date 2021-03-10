@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUIForFTP", "GUIForFTP\GUIForFTP.csproj", "{B3A62BE3-F8F5-42E2-9AE0-6E12D8A1F374}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B3A62BE3-F8F5-42E2-9AE0-6E12D8A1F374}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3A62BE3-F8F5-42E2-9AE0-6E12D8A1F374}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3A62BE3-F8F5-42E2-9AE0-6E12D8A1F374}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3A62BE3-F8F5-42E2-9AE0-6E12D8A1F374}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {326CE67F-8F3F-404C-B3F5-6C78985FE502}
+	EndGlobalSection
+EndGlobal

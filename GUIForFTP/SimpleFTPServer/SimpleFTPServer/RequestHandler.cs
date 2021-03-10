@@ -74,6 +74,7 @@ namespace SimpleFTPServer
         /// </summary>
         private static async Task List(string path, int delta, StreamWriter writer)
         {
+            Console.WriteLine($"Path {path}");
             if (!Directory.Exists(path))
             {
                 await writer.WriteLineAsync("-1");
