@@ -14,9 +14,15 @@
             IsDirectory = element.Item2;
         }
 
-        private string Path { get; set; }
+        /// <summary>
+        /// Path to the element.
+        /// </summary>
+        public string Path { get; private set; }
 
-        private bool IsDirectory { get; set; }
+        /// <summary>
+        /// Checks if the elements is a directory or a file.
+        /// </summary>
+        public bool IsDirectory { get; private set; }
 
         /// <summary>
         /// Returns list view element value in a string.

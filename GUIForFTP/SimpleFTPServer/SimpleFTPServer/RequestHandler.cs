@@ -24,24 +24,26 @@ namespace SimpleFTPServer
             }
             catch (InvalidRequestBodyException)
             {
-                Console.WriteLine($"To client: {errorMessage}");
+                Console.WriteLine($"To client: {errorMessage} \"{request}\"");
                 await writer.WriteLineAsync(errorMessage);
                 return;
             }
 
+            var root = Path.GetFullPath("..\\..\\..\\..\\..\\");
+            root = root.Remove(root.Length - 1);
+
             if (parsedRequest.Item2.ToLower() == "current")
             {
                 Console.WriteLine($"From client: {parsedRequest.Item1} {parsedRequest.Item2}");
-                var currentDir = Directory.GetCurrentDirectory();
-                await List(currentDir, currentDir.Length, writer);
+                await List(root, root.Length, writer);
 
                 return;
             }
-
-            var root = Path.GetFullPath("..\\..\\..\\..\\..\\");
             
-            root = root.Remove(root.Length - 1);
             var path = Path.Combine(root, parsedRequest.Item2);
+
+            Console.WriteLine($"Root: {root}");
+            Console.WriteLine($"Path: {path}");
 
             if (Path.GetFullPath(root).Contains(Path.GetFullPath(path)))
             {
@@ -55,6 +57,7 @@ namespace SimpleFTPServer
             {
                 case 1:
                     var delta = root.Length;
+                    Console.WriteLine($"Path before listing: {path}");
                     await List(path, delta, writer);
                     break;
                 case 2:
@@ -82,6 +85,8 @@ namespace SimpleFTPServer
 
             var files = Directory.GetFiles(path);
             var folders = Directory.GetDirectories(path);
+
+            Console.WriteLine($"Path in listing: {path}");
 
             var responseSize = files.Length + folders.Length;
 

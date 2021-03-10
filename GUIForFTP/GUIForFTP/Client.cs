@@ -32,6 +32,8 @@ namespace SimpleFTPClient
         /// <exception cref="AccessToDirectoryOnServerDenied">Exception is thrown when the client writer gets "denied" string from server.</exception>
         public async Task<List<(string, bool)>> List(string path)
         {
+            MessageBox.Show($"First");
+
             if (!CheckRunning())
             {
                 throw new ClientNotRunningException();

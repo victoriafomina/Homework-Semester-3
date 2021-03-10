@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace SimpleFTPClient
@@ -20,8 +21,7 @@ namespace SimpleFTPClient
 
         public Client(string server, int port)
         {
-            this.server = server;
-            this.port = port;
+            client = new TcpClient();
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace SimpleFTPClient
             }
 
             using var fileStream = new FileStream(downloadTo + fileName, FileMode.CreateNew);
-            await reader.BaseStream.CopyToAsync(fileStream);
+            await reader.BaseStream.CopyToAsync(fileStream);             
         }
 
         /// <summary>

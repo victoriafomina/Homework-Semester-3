@@ -84,7 +84,7 @@
                 <TextBlock Text="Save all" />
             </Button>
             <ScrollViewer Grid.Column="1">
-                <ListView x:Name="elementsInFolder" />
+                <ListView x:Name="elementsInFolder" MouseDoubleClick="ElementsInFolder_MouseDoubleClick"  />
             </ScrollViewer>
         </Grid>
         <Grid Margin="5, 35, 0, 5">
@@ -97,7 +97,12 @@
         </Grid>
         <TextBlock Text="Downloads information" HorizontalAlignment="Center"/>
         <ScrollViewer>
-            <ListView x:Name="downloadsInfo" Height="115" Margin="10, 0, 5 , 0"/>
+            <ListView 
+                x:Name="downloadsInfo" 
+                ItemsSource="{Binding DownloadsInfo}" 
+                Height="115" 
+                Margin="10, 0, 5 , 0">
+            </ListView>
         </ScrollViewer>
     </StackPanel>
 </Window>

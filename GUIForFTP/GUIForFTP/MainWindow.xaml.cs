@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,6 +27,9 @@ namespace GUIForFTP
         public MainWindow()
         {
             InitializeComponent();
+            clientViewModel = new ClientViewModel();
+            elementsInFolder.ItemsSource = clientViewModel.ElementsInFolder;
+            downloadsInfo.ItemsSource = clientViewModel.DownloadsInfo;
             InitFillFilesAndFoldersListView();
         }
 
@@ -87,17 +91,22 @@ namespace GUIForFTP
             }
         }
 
+        private void ElementsInFolder_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var item = ((FrameworkElement)e.OriginalSource).DataContext as ListViewElementModel;
+
+            if (item != null)
+            {
+                MessageBox.Show($"Item: {item}");
+            }
+        }
+
         private void SaveAllFilesInFolder_Click(object sender, RoutedEventArgs e)
         {
 
         }
 
-        private async void InitFillFilesAndFoldersListView()
-        {
-            clientViewModel = new ClientViewModel();
-            elementsInFolder.ItemsSource = clientViewModel.ElementsInFolder;
-
-            //await clientViewModel.GetFilesAndFoldersFromBaseServersDirectoryAsync("127.0.0.1", 6666);
-        }
+        private async void InitFillFilesAndFoldersListView() =>
+                await clientViewModel.GetFilesAndFoldersFromBaseServersDirectoryAsync("127.0.0.1", 6666);
     }
 }

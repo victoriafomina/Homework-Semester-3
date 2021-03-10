@@ -19,6 +19,7 @@ namespace GUIForFTP
         public ClientViewModel()
         {
             ElementsInFolder = new ObservableCollection<ListViewElementModel>();
+            DownloadsInfo = new ObservableCollection<string>();
             client = new Client();
         }
 
@@ -43,9 +44,20 @@ namespace GUIForFTP
         }
 
         /// <summary>
+        /// Downloads file from server.
+        /// </summary>
+        public async Task DownloadFileFromServer(string downloadFrom, string downloadTo) =>
+                await client.Get(downloadFrom, downloadTo);
+
+        /// <summary>
         /// Returns a collection that is binded with a ListView that shows files and folders in directory.
         /// </summary>
         public ObservableCollection<ListViewElementModel> ElementsInFolder { get; private set; }
+
+        /// <summary>
+        /// Returns a collection that is binded with a ListView that shows downloads information.
+        /// </summary>
+        public ObservableCollection<string> DownloadsInfo { get; private set; }
 
         /// <summary>
         /// Disposes of resourses.
