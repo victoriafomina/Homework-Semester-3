@@ -15,8 +15,6 @@ namespace SimpleFTPServer
         /// </summary>
         public static async Task HandleRequest(string request, StreamWriter writer)
         {
-            Console.WriteLine(request);
-
             (int, string) parsedRequest;
             var errorMessage = "Invalid request body!";
 
@@ -27,6 +25,15 @@ namespace SimpleFTPServer
             catch (InvalidRequestBodyException)
             {
                 await writer.WriteLineAsync(errorMessage);
+                return;
+            }
+
+            if (parsedRequest.Item2.ToLower() == "current")
+            {
+                Console.WriteLine($"{parsedRequest.Item1} {parsedRequest.Item2}");
+                var currentDir = Directory.GetCurrentDirectory();
+                await List(currentDir, currentDir.Length, writer);
+
                 return;
             }
 

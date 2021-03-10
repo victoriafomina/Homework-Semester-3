@@ -7,7 +7,10 @@ namespace SimpleFTPClient
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine(Path.GetFullPath("..\\..\\..\\..\\..\\"));
+            /*var client = new Client("127.0.0.1", 6666);
+            client.Run();
+            var list = client.List("current");
+            Console.WriteLine(list.Result[0].Item1);*/
         }
     }
 }

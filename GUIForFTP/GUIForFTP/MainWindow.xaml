@@ -7,6 +7,15 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
 
+    <Window.Resources>
+        <DataTemplate x:Key="listViewElementTemplate">
+            <StackPanel Margin="5">
+                <TextBlock FontSize="16" Text="{Binding Path=ElementInFolder.Item1}" HorizontalAlignment="Center" />
+                <TextBlock FontSize="16" Text="{Binding Path=ElementInFolder.Item2}" HorizontalAlignment="Center" />
+            </StackPanel>
+        </DataTemplate>
+    </Window.Resources>
+
     <StackPanel>
         <Grid Height="70" VerticalAlignment="Top" Margin="0, 15, 0, 0">
             <Grid.ColumnDefinitions>
@@ -19,7 +28,7 @@
             <TextBox 
                 x:Name="server" 
                 Grid.Column="1" 
-                Text="Введите адрес сервера"            
+                Text="Input server address"            
                 Background="LightPink" 
                 Height="20" 
                 Width="150">
@@ -27,30 +36,29 @@
             <TextBox 
                 x:Name="port" 
                 Grid.Column="2" 
-                Text="Введите порт"
+                Text="Input port"
                 Background="LightPink" 
                 Height="20" 
                 Width="150">
             </TextBox>
             <Button 
-                x:Name="connect" 
+                x:Name="connectServer" 
                 Grid.Column="3" 
                 Height="20" 
-                Width="60">
+                Width="60"
+                Content="Run"
+                Background="Green"
+                Click="ConnectServer_Click">
             </Button>
         </Grid>
         <Grid>
             <TextBlock 
-                Text="Текущая директория: " 
-                Padding="25, 5, 0, 0">                
-            </TextBlock>
-            <TextBlock 
-                Text="Список файлов и папок в текущей директории" 
-                Padding="0, 35, 0, 0" 
-                HorizontalAlignment="Center">                
+                Text="List of files and folders in current directory" 
+                Padding="0, 25, 0, 0" 
+                HorizontalAlignment="Center">
             </TextBlock>
         </Grid>
-        <Grid>
+        <Grid Height="100">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="8*" />
@@ -58,17 +66,21 @@
             <Button
                 x:Name="folderUp" 
                 Grid.Column="0" 
+                VerticalAlignment="Top"
                 Margin="0, 20, 0, 0"
                 Height="20" 
-                Width="60">
+                Width="60"
+                Click="FolderUp_Click">
                 <TextBlock Text="Folder up" />
             </Button>
             <Button 
                 x:Name="saveAllFilesInFolder" 
                 Grid.Column="0" 
-                Margin="0, 100, 0, 0"
+                VerticalAlignment="Bottom"
+                Margin="0, 0, 0, 20"
                 Height="20" 
-                Width="60">
+                Width="60"
+                Click="SaveAllFilesInFolder_Click">
                 <TextBlock Text="Save all" />
             </Button>
             <ScrollViewer Grid.Column="1">
