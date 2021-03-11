@@ -34,7 +34,6 @@ namespace SimpleFTPServer
 
             if (parsedRequest.Item2.ToLower() == "current")
             {
-                Console.WriteLine($"From client: {parsedRequest.Item1} {parsedRequest.Item2}");
                 await List(root, root.Length, writer);
 
                 return;
@@ -57,10 +56,10 @@ namespace SimpleFTPServer
             {
                 case 1:
                     var delta = root.Length;
-                    Console.WriteLine($"Path before listing: {path}");
                     await List(path, delta, writer);
                     break;
                 case 2:
+                    Console.WriteLine($"Path before downloading: {path}");
                     await Get(path, writer);
                     break;
                 default:
@@ -74,11 +73,9 @@ namespace SimpleFTPServer
         /// </summary>
         private static async Task List(string path, int delta, StreamWriter writer)
         {
-            Console.WriteLine($"Path {path}");
             if (!Directory.Exists(path))
             {
                 await writer.WriteLineAsync("-1");
-                Console.WriteLine("To client: -1");
                 return;
             }
 
@@ -86,8 +83,6 @@ namespace SimpleFTPServer
 
             var files = Directory.GetFiles(path);
             var folders = Directory.GetDirectories(path);
-
-            Console.WriteLine($"Path in listing: {path}");
 
             var responseSize = files.Length + folders.Length;
 
@@ -115,6 +110,7 @@ namespace SimpleFTPServer
         {
             if (!File.Exists(path))
             {
+                Console.WriteLine($"Path \'{path}\' does not exist");
                 await writer.WriteLineAsync("-1");
                 return;
             }
@@ -122,8 +118,10 @@ namespace SimpleFTPServer
             var size = new FileInfo(path).Length;
             await writer.WriteLineAsync($"{size} ");
 
-            using var fileStream = new FileStream(path, FileMode.Create, FileAccess.ReadWrite);
+            using var fileStream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite);
+            Console.WriteLine($"Filestream created. We are gonna write!");
             await fileStream.CopyToAsync(writer.BaseStream);
+            Console.WriteLine($"Writing ended!");
         }
 
         /// <summary>

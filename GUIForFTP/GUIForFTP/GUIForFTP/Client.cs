@@ -90,13 +90,14 @@ namespace SimpleFTPClient
                 throw new ClientNotRunningException();
             }
 
-            var temp = downloadFrom.Split('\\');
+            var formattedDownloadFrom = downloadFrom.Substring(2);
+            var temp = formattedDownloadFrom.Split('\\');
             var fileName = temp[temp.Length - 1];
 
             var writer = new StreamWriter(client.GetStream()) { AutoFlush = true };
             var reader = new StreamReader(client.GetStream());
 
-            await writer.WriteLineAsync("2" + downloadFrom);
+            await writer.WriteLineAsync("2" + formattedDownloadFrom);
 
             var response = await reader.ReadLineAsync();
 

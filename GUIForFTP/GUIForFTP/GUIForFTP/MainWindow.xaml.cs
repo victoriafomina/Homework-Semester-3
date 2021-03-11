@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using SimpleFTPClient;
@@ -22,98 +23,77 @@ namespace GUIForFTP
             InitFillFilesAndFoldersListView();
         }
 
-        private void ConnectServer_Click(object sender, RoutedEventArgs e)
-        {
-            //var correct = true;
-
-            //if (Uri.CheckHostName(server.Text) == UriHostNameType.Unknown)
-            //{
-            //    MessageBox.Show("Host name is not correct!");
-            //    correct = false;
-            //}
-
-            //if (!int.TryParse(port.Text, out _))
-            //{
-            //    MessageBox.Show("Port must be a numeral value!");
-            //    correct = false;
-            //}
-
-            //if ((sender as Button).Background == Brushes.Red)
-            //{
-            //    (sender as Button).Background = Brushes.Green;
-            //    (sender as Button).Content = "Run";
-            //    clientViewModel.Dispose();
-            //    MessageBox.Show("Client disconnected from server!");
-            //}
-            //else if (correct)
-            //{
-            //    (sender as Button).Background = Brushes.Red;
-            //    (sender as Button).Content = "Stop";
-            //    clientViewModel.
-            //    MessageBox.Show("Client connected to server!");
-            //}
-        }
-
         private bool CheckServerAndPortCorectness() =>
                 Uri.CheckHostName(server.Text) != UriHostNameType.Unknown && int.TryParse(port.Text, out _);
 
-        private void CheckAndHandlePortAndHostNameCorectness()
-        {
-            if (CheckServerAndPortCorectness())
-            {
-                MessageBox.Show("Port or hostname is incorrect!");
-            }
-        }
-
         private async void FolderUp_Click(object sender, RoutedEventArgs e)
-        {
-            try
+        {   if (CheckServerAndPortCorectness())
             {
-                if (CheckServerAndPortCorectness())
+                try
                 {
-                    try
-                    {
-                        await clientViewModel.GetListOfFilesAndFoldersFromDirectoryAsync(Direction.Up, "", server.Text, int.Parse(port.Text));
-                    }
-                    catch (AccessToDirectoryOnServerDeniedException)
-                    {
-                        MessageBox.Show("You don't have an access to upper directories!");
-                    }
-
-                    return;
+                    await clientViewModel.GetListOfFilesAndFoldersFromDirectoryAsync(Direction.Up, "", server.Text, int.Parse(port.Text));
+                }
+                catch (CouldNotAccessDirUpperThanRootException)
+                {
+                    MessageBox.Show("You don't have an access to upper directories!");
                 }
 
-                MessageBox.Show("Port and/or hostname are incorrect!");
-            }
-            catch (CouldNotAccessDirUpperThanRootException)
-            {
-                MessageBox.Show("You don't have an access to upper directories!");
-            }
+                return;
+             }
+
+             MessageBox.Show("Port and/or hostname are incorrect!");
         }
 
         private async void ElementsInFolder_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var item = ((FrameworkElement)e.OriginalSource).DataContext as ListViewElementModel;
 
-            if (item.IsDirectory && CheckServerAndPortCorectness())
+            var isCorrectServerAndPort = CheckServerAndPortCorectness();
+
+            if (isCorrectServerAndPort && item.IsDirectory)
             {
                 await clientViewModel.GetListOfFilesAndFoldersFromDirectoryAsync(Direction.Down, item.Path, server.Text, int.Parse(port.Text));
             }
-            else if (CheckServerAndPortCorectness() && Directory.Exists(downloadTo.Text))
+            else if (isCorrectServerAndPort && Directory.Exists(downloadTo.Text))
             {
-                clientViewModel.DownloadsInfo.Add($"Trying to start to download \"{item.Path}\"");
+                clientViewModel.DownloadsInfo.Add($"Trying to start downloading \"{item.Path}\"");
                 await clientViewModel.DownloadFileFromServer(item.Path, downloadTo.Text);
                 clientViewModel.DownloadsInfo.Add($"\"{item.Path}\" downloaded");
+                MessageBox.Show($"\"{item.Path}\" downloaded");
             }
             else
-            {
-                // message box (port and host name bla bla bla) or (ne sushetv directoriya)
+            { 
+                if (!isCorrectServerAndPort)
+                {
+                    MessageBox.Show("Port and/or hostname are incorrect!");
+                }
+
+                if (!Directory.Exists(downloadTo.Text))
+                {
+                    MessageBox.Show("Directory you want to download to does not exist!");
+                }
             }    
         }
 
-        private void SaveAllFilesInFolder_Click(object sender, RoutedEventArgs e)
+        private async void SaveAllFilesInFolder_Click(object sender, RoutedEventArgs e)
         {
+            if (CheckServerAndPortCorectness())
+            {
+                foreach (var file in clientViewModel.ElementsInFolder)
+                {
+                    if (!file.IsDirectory)
+                    {
+                        clientViewModel.DownloadsInfo.Add($"Trying to start downloading \"{file.Path}\"");
+                        await clientViewModel.DownloadFileFromServer(file.Path, downloadTo.Text);
+                        clientViewModel.DownloadsInfo.Add($"\"{file.Path}\" downloaded");
+                        MessageBox.Show($"\"{file.Path}\" downloaded");
+                    }
+                }
 
+                return;
+            }
+
+            MessageBox.Show("Port and/or hostname are incorrect!");
         }
 
         private async void InitFillFilesAndFoldersListView() =>
