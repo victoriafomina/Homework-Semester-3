@@ -64,7 +64,7 @@ namespace GUIForFTP
         }
 
         /// <summary>
-        /// Downloads file from server.
+        /// Downloads a file from server.
         /// </summary>
         public async Task DownloadFileFromServer(string downloadFrom, string downloadTo) =>
                 await client.Get(downloadFrom, downloadTo);

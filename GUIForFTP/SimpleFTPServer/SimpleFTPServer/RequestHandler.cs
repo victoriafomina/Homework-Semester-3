@@ -24,7 +24,6 @@ namespace SimpleFTPServer
             }
             catch (InvalidRequestBodyException)
             {
-                Console.WriteLine($"To client: {errorMessage} \"{request}\"");
                 await writer.WriteLineAsync(errorMessage);
                 return;
             }
@@ -41,12 +40,8 @@ namespace SimpleFTPServer
             
             var path = Path.Combine(root, parsedRequest.Item2);
 
-            Console.WriteLine($"Root: {root}");
-            Console.WriteLine($"Path: {path}");
-
             if (Path.GetFullPath(root).Contains(Path.GetFullPath(path)))
             {
-                Console.WriteLine($"To client: denied");
                 await writer.WriteAsync("denied");
 
                 return;
@@ -59,7 +54,6 @@ namespace SimpleFTPServer
                     await List(path, delta, writer);
                     break;
                 case 2:
-                    Console.WriteLine($"Path before downloading: {path}");
                     await Get(path, writer);
                     break;
                 default:
@@ -110,7 +104,6 @@ namespace SimpleFTPServer
         {
             if (!File.Exists(path))
             {
-                Console.WriteLine($"Path \'{path}\' does not exist");
                 await writer.WriteLineAsync("-1");
                 return;
             }
@@ -119,9 +112,7 @@ namespace SimpleFTPServer
             await writer.WriteLineAsync($"{size} ");
 
             using var fileStream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite);
-            Console.WriteLine($"Filestream created. We are gonna write!");
             await fileStream.CopyToAsync(writer.BaseStream);
-            Console.WriteLine($"Writing ended!");
         }
 
         /// <summary>

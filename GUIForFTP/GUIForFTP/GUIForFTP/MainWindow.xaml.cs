@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using SimpleFTPClient;
 
 namespace GUIForFTP
 {
@@ -13,6 +12,7 @@ namespace GUIForFTP
     public partial class MainWindow : Window
     {
         private ClientViewModel clientViewModel;
+        private readonly string portOrHostNameAreIncorrect = "Port and/or hostname are incorrect!";
 
         public MainWindow()
         {
@@ -41,7 +41,7 @@ namespace GUIForFTP
                 return;
              }
 
-             MessageBox.Show("Port and/or hostname are incorrect!");
+             MessageBox.Show(portOrHostNameAreIncorrect);
         }
 
         private async void ElementsInFolder_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -59,13 +59,12 @@ namespace GUIForFTP
                 clientViewModel.DownloadsInfo.Add($"Trying to start downloading \"{item.Path}\"");
                 await clientViewModel.DownloadFileFromServer(item.Path, downloadTo.Text);
                 clientViewModel.DownloadsInfo.Add($"\"{item.Path}\" downloaded");
-                MessageBox.Show($"\"{item.Path}\" downloaded");
             }
             else
             { 
                 if (!isCorrectServerAndPort)
                 {
-                    MessageBox.Show("Port and/or hostname are incorrect!");
+                    MessageBox.Show(portOrHostNameAreIncorrect);
                 }
 
                 if (!Directory.Exists(downloadTo.Text))
@@ -83,17 +82,24 @@ namespace GUIForFTP
                 {
                     if (!file.IsDirectory)
                     {
-                        clientViewModel.DownloadsInfo.Add($"Trying to start downloading \"{file.Path}\"");
-                        await clientViewModel.DownloadFileFromServer(file.Path, downloadTo.Text);
-                        clientViewModel.DownloadsInfo.Add($"\"{file.Path}\" downloaded");
-                        MessageBox.Show($"\"{file.Path}\" downloaded");
+                        await Task.Run(async () =>
+                        {
+                            await DownloadFileAsync(file);
+                        });
                     }
                 }
 
                 return;
             }
 
-            MessageBox.Show("Port and/or hostname are incorrect!");
+            MessageBox.Show(portOrHostNameAreIncorrect);
+        }
+
+        private async Task DownloadFileAsync (ListViewElementModel file)
+        {
+            clientViewModel.DownloadsInfo.Add($"Trying to start downloading \"{file.Path}\"");
+            await clientViewModel.DownloadFileFromServer(file.Path, downloadTo.Text);
+            clientViewModel.DownloadsInfo.Add($"\"{file.Path}\" downloaded");
         }
 
         private async void InitFillFilesAndFoldersListView() =>
