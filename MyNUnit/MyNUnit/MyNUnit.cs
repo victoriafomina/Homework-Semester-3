@@ -106,20 +106,20 @@ namespace MyNUnit
             {
                 testsResults.TryAdd(type, new ConcurrentQueue<TestMethodInfo>());
 
-                /*foreach (var beforeClassMethod in testedMethods[type].BeforeClassTests)
+                foreach (var beforeClassMethod in testedMethods[type].BeforeClassTests)
                 {
                     RunNonTestMethod(beforeClassMethod, null);
-                }*/
+                }
 
                 Parallel.ForEach(testedMethods[type].Tests, testedMethod =>
                 {
                     RunTestMethod(type, testedMethod);
                 });
 
-                //foreach (var afterClassMethod in testedMethods[type].AfterClassTests)
-                //{
-                //    RunNonTestMethod(afterClassMethod, null);
-                //}
+                foreach (var afterClassMethod in testedMethods[type].AfterClassTests)
+                {
+                    RunNonTestMethod(afterClassMethod, null);
+                }
             });
         }
 
