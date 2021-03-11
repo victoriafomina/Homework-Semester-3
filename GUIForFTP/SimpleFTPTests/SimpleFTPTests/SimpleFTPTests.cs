@@ -2,7 +2,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SimpleFTPClient;
 using SimpleFTPServer;
 using System.IO;
-using System.Threading.Tasks;
 using System;
 
 namespace SimpleFTP.Tests
@@ -12,8 +11,8 @@ namespace SimpleFTP.Tests
     {
         private Server server;
         private Client client;
-        private string address;
-        private int port;
+        private readonly string address = "127.0.0.1";
+        private readonly int port = 6666;
         private readonly string root = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName;
         private readonly string folderPath = "\\..\\..\\";
         private string pathToDownloaded;
@@ -21,20 +20,17 @@ namespace SimpleFTP.Tests
         [TestInitialize]
         public void Initialize()
         {
-            port = 6666;
-            address = "127.0.0.1";
-
             pathToDownloaded = Path.Combine(root, folderPath);
             server = new Server(port);
-            client = new Client(address, port);
+            client = new Client();
         }
 
         [TestMethod]
-        public void ListRequestTest()
+        public async void ListRequestTest()
         {
-            Task.Run(async () => await server.Run());
+            await server.Run();
 
-            client.Run();
+            client.Run(address, port);
 
             var listRequestTestResult = client.List("Test").Result;
 
@@ -44,11 +40,11 @@ namespace SimpleFTP.Tests
         }
 
         [TestMethod]
-        public void ListRequestFolderInFolderTest()
+        public async void ListRequestFolderInFolderTest()
         {
-            Task.Run(async () => await server.Run());
+            await server.Run();
 
-            client.Run();
+            client.Run(address, port);
 
             var listRequestFolderResult = client.List("Test\\Folder").Result;
 
@@ -58,11 +54,11 @@ namespace SimpleFTP.Tests
 
         [TestMethod]
         [ExpectedException(typeof(AggregateException))]
-        public void GetFileNotFoundTest()
+        public async void GetFileNotFoundTest()
         {
-            Task.Run(async () => await server.Run());
+            await server.Run();
 
-            client.Run();
+            client.Run(address, port);
 
             client.Get("olololo", pathToDownloaded).Wait();
         }

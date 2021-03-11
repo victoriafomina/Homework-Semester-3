@@ -1,5 +1,4 @@
-﻿
-namespace SimpleFTPServer
+﻿namespace SimpleFTPServer
 {
     public class Program
     {
