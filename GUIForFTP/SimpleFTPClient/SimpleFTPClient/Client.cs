@@ -106,7 +106,7 @@ namespace SimpleFTPClient
                 throw new FileNotFoundException("File was not found on the server!");
             }
 
-            var fileStream = new FileStream(downloadTo + fileName, FileMode.CreateNew);
+            var fileStream = new FileStream(downloadTo + fileName, FileMode.OpenOrCreate);
             await reader.BaseStream.CopyToAsync(fileStream);
         }
 

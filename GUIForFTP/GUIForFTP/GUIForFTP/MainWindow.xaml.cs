@@ -11,7 +11,7 @@ namespace GUIForFTP
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ClientViewModel clientViewModel;
+        private readonly ClientViewModel clientViewModel;
         private readonly string portOrHostNameAreIncorrect = "Port and/or hostname are incorrect!";
 
         public MainWindow()
@@ -56,9 +56,7 @@ namespace GUIForFTP
             }
             else if (isCorrectServerAndPort && Directory.Exists(downloadTo.Text))
             {
-                clientViewModel.DownloadsInfo.Add($"Trying to start downloading \"{item.Path}\"");
-                await clientViewModel.DownloadFileFromServer(item.Path, downloadTo.Text);
-                clientViewModel.DownloadsInfo.Add($"\"{item.Path}\" downloaded");
+                await DownloadFileAsync(item);
             }
             else
             { 
@@ -82,10 +80,7 @@ namespace GUIForFTP
                 {
                     if (!file.IsDirectory)
                     {
-                        await Task.Run(async () =>
-                        {
-                            await DownloadFileAsync(file);
-                        });
+                        await DownloadFileAsync(file);
                     }
                 }
 
@@ -97,9 +92,16 @@ namespace GUIForFTP
 
         private async Task DownloadFileAsync (ListViewElementModel file)
         {
-            clientViewModel.DownloadsInfo.Add($"Trying to start downloading \"{file.Path}\"");
-            await clientViewModel.DownloadFileFromServer(file.Path, downloadTo.Text);
-            clientViewModel.DownloadsInfo.Add($"\"{file.Path}\" downloaded");
+            try
+            {
+                clientViewModel.DownloadsInfo.Add($"Trying to start downloading \"{file.Path}\"");
+                await clientViewModel.DownloadFileFromServer(file.Path, downloadTo.Text);
+                clientViewModel.DownloadsInfo.Add($"\"{file.Path}\" downloaded");
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }            
         }
 
         private async void InitFillFilesAndFoldersListView() =>

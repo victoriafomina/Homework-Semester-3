@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,7 +27,7 @@ namespace SimpleFTPServer
                 return;
             }
 
-            var root = Path.GetFullPath("..\\..\\..\\..\\..\\");
+            var root = Path.GetFullPath("..\\..\\..\\..\\");
             root = root.Remove(root.Length - 1);
 
             if (parsedRequest.Item2.ToLower() == "current")

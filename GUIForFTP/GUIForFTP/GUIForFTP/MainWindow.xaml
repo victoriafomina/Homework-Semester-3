@@ -104,7 +104,7 @@
         <ScrollViewer>
             <ListView 
                 x:Name="downloadsInfo" 
-                ItemsSource="{Binding DownloadsInfo}" 
+                ItemsSource="{Binding ClientViewModel.DownloadsInfo}" 
                 Height="115" 
                 Margin="10, 0, 5 , 0">
             </ListView>

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using System.Windows;
+using Meziantou.Framework.WPF.Collections;
 using SimpleFTPClient;
 
 namespace GUIForFTP
@@ -11,7 +13,7 @@ namespace GUIForFTP
     /// </summary>
     public class ClientViewModel : IDisposable
     {
-        private Client client;
+        private readonly Client client;
         private readonly string serverRootDir = "current";
 
         /// <summary>
@@ -20,7 +22,7 @@ namespace GUIForFTP
         public ClientViewModel()
         {
             ElementsInFolder = new ObservableCollection<ListViewElementModel>();
-            DownloadsInfo = new ObservableCollection<string>();
+            DownloadsInfo = new ConcurrentObservableCollection<string>();
             client = new Client();
         }
 
@@ -34,6 +36,8 @@ namespace GUIForFTP
 
             if (Direction.Current == direction)
             {
+                MessageBox.Show($"Balance: {PathTracker.Balance}, Path: {PathTracker.Path}, Direction: {direction}" +
+                        $"Directory: {dir}");
                 result = await client.List(serverRootDir);
                 FillWithFilesAndFolders(result);
             }
@@ -41,12 +45,16 @@ namespace GUIForFTP
             {
                 PathTracker.Down(dir);
                 var path = PathTracker.Path;
+                MessageBox.Show($"Balance: {PathTracker.Balance}, Path: {PathTracker.Path}, Direction: {direction}" +
+                        $"Directory: {dir}");
                 result = await client.List($"{path}");
                 FillWithFilesAndFolders(result);
             }
             else if (PathTracker.Balance == 1)
             {
                 PathTracker.Up();
+                MessageBox.Show($"Balance: {PathTracker.Balance}, Path: {PathTracker.Path}, Direction: {direction}" +
+                        $"Directory: {dir}");
                 result = await client.List(serverRootDir);
                 FillWithFilesAndFolders(result);
             }
@@ -54,11 +62,15 @@ namespace GUIForFTP
             {
                 PathTracker.Up();
                 var path = PathTracker.Path;
+                MessageBox.Show($"Balance: {PathTracker.Balance}, Path: {PathTracker.Path}, Direction: {direction}" +
+                        $"Directory: {dir}");
                 result = await client.List($"{path}");
                 FillWithFilesAndFolders(result);
             }
             else
             {
+                MessageBox.Show($"Balance: {PathTracker.Balance}, Path: {PathTracker.Path}, Direction: {direction}" +
+                        $"Directory: {dir}");
                 throw new CouldNotAccessDirUpperThanRootException();
             }
         }
@@ -77,7 +89,7 @@ namespace GUIForFTP
         /// <summary>
         /// Returns a collection that is binded with a ListView that shows downloads information.
         /// </summary>
-        public ObservableCollection<string> DownloadsInfo { get; private set; }
+        public ConcurrentObservableCollection<string> DownloadsInfo { get; private set; }
 
         /// <summary>
         /// Disposes of resourses.
