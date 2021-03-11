@@ -1,6 +1,7 @@
 ﻿using MyNUnit.Attributes;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -24,6 +25,7 @@ namespace MyNUnit
 
             FillQueueByTestedClassMethods(type);
         }
+
         /// <summary>
         /// Queue of the methods that are marked by an attribute AfterAttribute.
         /// </summary>
@@ -65,32 +67,29 @@ namespace MyNUnit
         /// <param name="type">The class whose methods will be tested.</param>
         private void FillQueueByTestedClassMethods(Type type)
         {
-            foreach (var method in type.GetMethods())
+            Parallel.ForEach(type.GetMethods(), method =>
             {
-                var task = Task.Run(() =>
+                if (method.GetCustomAttribute<AfterAttribute>() != null)
                 {
-                    if (method.GetCustomAttribute<AfterAttribute>() != null)
-                    {
-                        AddMethodToQueue(method, AfterTests);
-                    }
-                    else if (method.GetCustomAttribute<AfterClassAttribute>() != null)
-                    {
-                        AddMethodToQueue(method, AfterClassTests);
-                    }
-                    else if (method.GetCustomAttribute<BeforeAttribute>() != null)
-                    {
-                        AddMethodToQueue(method, BeforeTests);
-                    }
-                    else if (method.GetCustomAttribute<BeforeClassAttribute>() != null)
-                    {
-                        AddMethodToQueue(method, BeforeClassTests);
-                    }
-                    else if (method.GetCustomAttribute<TestAttribute>() != null)
-                    {
-                        AddMethodToQueue(method, Tests);
-                    }
-                });
-            }
+                    AddMethodToQueue(method, AfterTests);
+                }
+                else if (method.GetCustomAttribute<AfterClassAttribute>() != null)
+                {
+                    AddMethodToQueue(method, AfterClassTests);
+                }
+                else if (method.GetCustomAttribute<BeforeAttribute>() != null)
+                {
+                    AddMethodToQueue(method, BeforeTests);
+                }
+                else if (method.GetCustomAttribute<BeforeClassAttribute>() != null)
+                {
+                    AddMethodToQueue(method, BeforeClassTests);
+                }
+                else if (method.GetCustomAttribute<TestAttribute>() != null)
+                {
+                    AddMethodToQueue(method, Tests);
+                }
+            });
         }
     }
 }

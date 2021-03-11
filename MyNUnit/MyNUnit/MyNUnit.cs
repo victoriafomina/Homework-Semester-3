@@ -114,12 +114,7 @@ namespace MyNUnit
 
                     foreach (var beforeClassMethod in testedMethods[type].BeforeClassTests)
                     {
-                        var taskMethod = Task.Run(() => 
-                        {
-                            RunNonTestMethod(beforeClassMethod, null);
-                        });
-
-                        tasksMethods.Add(taskMethod);
+                        RunNonTestMethod(beforeClassMethod, null);
                     }
 
                     foreach (var testMethod in testedMethods[type].Tests)
@@ -132,17 +127,12 @@ namespace MyNUnit
                         tasksMethods.Add(taskMethod);
                     }
 
+                    Task.WaitAll(tasksMethods.ToArray());
+
                     foreach (var afterClassMethod in testedMethods[type].AfterClassTests)
                     {
-                        var taskMethod = Task.Run(() =>
-                        {
                             RunNonTestMethod(afterClassMethod, null);
-                        });
-
-                        tasksMethods.Add(taskMethod);
                     }
-
-                    Task.WaitAll(tasksClasses.ToArray());
                 });
 
                 tasksClasses.Add(taskClass);
@@ -169,7 +159,7 @@ namespace MyNUnit
         /// </summary>
         private void RunTestMethod(Type type, MethodInfo method)
         {
-            MethodCorectnessChecker(method);
+            CheckMethodCorrectness(method);
 
             var attribute = method.GetCustomAttribute<TestAttribute>();
 
@@ -186,7 +176,7 @@ namespace MyNUnit
 
             foreach (var beforeTest in testedMethods[type].BeforeTests)
             {
-                MethodCorectnessChecker(beforeTest);
+                CheckMethodCorrectness(beforeTest);
                 RunNonTestMethod(beforeTest, instance);
             }
 
@@ -215,7 +205,7 @@ namespace MyNUnit
 
             foreach (var afterTest in testedMethods[type].AfterTests)
             {
-                MethodCorectnessChecker(afterTest);
+                CheckMethodCorrectness(afterTest);
                 RunNonTestMethod(afterTest, instance);
             }
         }
@@ -223,7 +213,7 @@ namespace MyNUnit
         /// <summary>
         /// Checks if the method is valid for testing.
         /// </summary>
-        private void MethodCorectnessChecker(MethodInfo method)
+        private void CheckMethodCorrectness(MethodInfo method)
         {
             if (method.IsStatic)
             {
