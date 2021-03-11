@@ -60,15 +60,15 @@ namespace MyNUnit
         {
             var result = new Dictionary<Type, List<TestMethodInfo>>();
 
-            foreach (var type in testsResults.Keys)
+            Parallel.ForEach(testsResults.Keys, type =>
             {
-                result.Add(type, new List<TestMethodInfo>());
+                result.TryAdd(type, new List<TestMethodInfo>());
 
                 foreach (var testInfo in testsResults[type])
                 {
                     result[type].Add(testInfo);
                 }
-            }
+            });
 
             return result;
         }
@@ -78,11 +78,7 @@ namespace MyNUnit
         /// </summary>
         private IEnumerable<Type> GetClasses(string path)
         {
-            var assemblies = Directory.EnumerateFiles(path, "*.dll", SearchOption.AllDirectories)
-                    .Concat(Directory.EnumerateFiles(path, "*.exe", SearchOption.AllDirectories)).ToList();
-            assemblies.RemoveAll(assemblyPath => assemblyPath.Contains("\\MyNUnit.dll"));
-            assemblies.RemoveAll(assemblyPath => assemblyPath.Contains("\\MyNUnit.exe"));
-            assemblies.RemoveAll(assemblyPath => assemblyPath.Contains("\\Attributes.dll"));
+            var assemblies = GetAssembliesByPath(path);
 
             var classes = assemblies.AsParallel()
                 .Select(Assembly.LoadFrom)
@@ -90,6 +86,35 @@ namespace MyNUnit
                 .Where(x => x.IsClass);
 
             return classes;
+        }
+
+        /// <summary>
+        /// Returns the list with the information about assemblies' classes.
+        /// </summary>
+        public ConcurrentDictionary<string, IEnumerable<Type>> AssembliesClasses(string path)
+        {
+            var assemblies = GetAssembliesByPath(path);
+            var result = new ConcurrentDictionary<string, IEnumerable<Type>>();
+
+            Parallel.ForEach(assemblies, assembly =>
+            {
+                var classes = Assembly.Load(assembly).GetTypes().Where(x => x.IsClass);
+
+                result.TryAdd(assembly, classes);
+            });
+
+            return result;
+        }
+
+        private List<string> GetAssembliesByPath(string path)
+        {
+            var assemblies = Directory.EnumerateFiles(path, "*.dll", SearchOption.AllDirectories)
+                    .Concat(Directory.EnumerateFiles(path, "*.exe", SearchOption.AllDirectories)).ToList();
+            assemblies.RemoveAll(assemblyPath => assemblyPath.Contains("\\MyNUnit.dll"));
+            assemblies.RemoveAll(assemblyPath => assemblyPath.Contains("\\MyNUnit.exe"));
+            assemblies.RemoveAll(assemblyPath => assemblyPath.Contains("\\Attributes.dll"));
+
+            return assemblies;
         }
 
         /// <summary>

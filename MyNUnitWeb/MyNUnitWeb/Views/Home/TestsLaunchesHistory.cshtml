@@ -1,0 +1,80 @@
+﻿@model List<AssemblyViewModel>
+
+@{
+    ViewData["Title"] = "Tests launches history";
+}
+<h1>@ViewData["Title"]</h1>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+</head>
+<body>
+    <div>
+        <table>
+            @foreach (var assembly in Model)
+            {
+                <tr>
+                    <td>@assembly.Name</td>
+                </tr>
+            }
+        </table>
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Test</th>
+                        <th scope="col">Class name</th>
+                        <th scope="col">Elapsed time</th>
+                        <th scope="col">Launch time</th>
+                        <th scope="col">Ignored</th>
+                        <th scope="col">Passed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var assembly in Model)
+                    {
+                        foreach (var test in assembly.Tests)
+                        {
+                            if (test.Passed)
+                            {
+                                <tr>
+                                    <th scope="row">@test.Name</th>
+                                    <td>@test.ClassName</td>
+                                    <td>@test.ElapsedTime</td>
+                                    <td>@test.TestLaunchTime</td>
+                                    <td>True</td>
+                                    <td>@test.Passed</td>
+                                </tr>
+                            }
+                            else if (test.Ignored)
+                            {
+                                <tr>
+                                    <th scope="row">@test.Name</th>
+                                    <td>@test.ClassName</td>
+                                    <td>@test.ElapsedTime</td>
+                                    <td>@test.TestLaunchTime</td>
+                                    <td>@test.Ignored</td>
+                                    <td>False</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <th scope="row">@test.Name</th>
+                                    <td>@test.ClassName</td>
+                                    <td>@test.ElapsedTime</td>
+                                    <td>@test.TestLaunchTime</td>
+                                    <td>True</td>
+                                    <td>@test.Passed</td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+﻿@model TestsViewModel
+
+@{
+    ViewData["Title"] = "Tests launches information";
+}
+<h1>@ViewData["Title"]</h1>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+</head>
+<body>
+    <h2>Tests</h2>
+    <form asp-controller="Home" asp-action="RunTests">
+        <p>
+            <input type="submit" value="Run" />
+        </p>
+    </form>
+        <table>
+            <tbody>
+                @foreach (var test in Model.Tests)
+                {
+                    if (test.Ignored)
+                    {
+                        <tr>
+                            <td>Name: @test.Name</td>
+                            <td>Class name: @test.ClassName</td>
+                            <td>Ignored</td>
+                            <td>Ignore message: @test.IgnoreMessage</td>
+                        </tr>
+                    }
+                    else if (test.Passed)
+                    {
+                    <tr>
+                        <td>Name: @test.Name</td>
+                        <td>Class name: @test.ClassName</td>
+                        <td>Passed</td>
+                        <td>Elapsed time: @test.ElapsedTime</td>
+                        <td>Launch time: @test.TestLaunchTime</td>
+                    </tr>
+                    }
+                    else
+                    {
+                    <tr>
+                        <td>Name: @test.Name</td>
+                        <td>Class name: @test.ClassName</td>
+                        <td>Failed</td>
+                        <td>Elapsed time: @test.ElapsedTime</td>
+                        <td>Launch time: @test.TestLaunchTime</td>
+                        <td></td>
+                    </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </body>
+</html>

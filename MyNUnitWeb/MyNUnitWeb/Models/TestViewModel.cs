@@ -27,7 +27,7 @@ namespace MyNUnitWeb.Models
         /// <summary>
         /// Informs if the test is passed, not passed or was not running.
         /// </summary>
-        public bool? Passed { get; set; } = null;
+        public bool Passed { get; set; }
 
         /// <summary>
         /// Informs if the test was ignored.
