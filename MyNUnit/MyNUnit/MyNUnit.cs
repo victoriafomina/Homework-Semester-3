@@ -102,9 +102,7 @@ namespace MyNUnit
         /// </summary>
         private void RunTests()
         {
-            var tasksClasses = new List<Task>();
-
-            foreach (var type in testedMethods.Keys)
+            Parallel.ForEach(testedMethods.Keys, type =>
             {
                 var taskClass = Task.Run(() =>
                 {
@@ -117,26 +115,17 @@ namespace MyNUnit
                         RunNonTestMethod(beforeClassMethod, null);
                     }
 
-                    foreach (var testMethod in testedMethods[type].Tests)
+                    Parallel.ForEach(testedMethods[type].Tests, testedMethod =>
                     {
-                        var taskMethod = Task.Run(() =>
-                        {
-                            RunTestMethod(type, testMethod);
-                        });
-
-                        tasksMethods.Add(taskMethod);
-                    }
-
-                    Task.WaitAll(tasksMethods.ToArray());
+                        RunTestMethod(type, testedMethod);
+                    });
 
                     foreach (var afterClassMethod in testedMethods[type].AfterClassTests)
                     {
                             RunNonTestMethod(afterClassMethod, null);
                     }
                 });
-
-                tasksClasses.Add(taskClass);
-            }
+            });
         }
 
         /// <summary>
