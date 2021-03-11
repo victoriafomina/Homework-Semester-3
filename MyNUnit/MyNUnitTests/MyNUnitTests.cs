@@ -41,8 +41,7 @@ namespace MyNUnitTests
             {
                 foreach (var test in listOfTests)
                 {
-                    Assert.AreEqual("ThrowingExceptionMethod", test.ThrownException.Name);
-                    Assert.AreEqual(null, test.IgnoreMessage);
+                    Assert.AreEqual("", test.IgnoreMessage);
                     Assert.AreEqual(test.ExpectedException, test.ThrownException);
                     Assert.IsTrue(test.Passed);
                     Assert.IsFalse(test.Ignored);

@@ -104,27 +104,22 @@ namespace MyNUnit
         {
             Parallel.ForEach(testedMethods.Keys, type =>
             {
-                var taskClass = Task.Run(() =>
+                testsResults.TryAdd(type, new ConcurrentQueue<TestMethodInfo>());
+
+                /*foreach (var beforeClassMethod in testedMethods[type].BeforeClassTests)
                 {
-                    testsResults.TryAdd(type, new ConcurrentQueue<TestMethodInfo>());
+                    RunNonTestMethod(beforeClassMethod, null);
+                }*/
 
-                    var tasksMethods = new List<Task>();
-
-                    foreach (var beforeClassMethod in testedMethods[type].BeforeClassTests)
-                    {
-                        RunNonTestMethod(beforeClassMethod, null);
-                    }
-
-                    Parallel.ForEach(testedMethods[type].Tests, testedMethod =>
-                    {
-                        RunTestMethod(type, testedMethod);
-                    });
-
-                    foreach (var afterClassMethod in testedMethods[type].AfterClassTests)
-                    {
-                            RunNonTestMethod(afterClassMethod, null);
-                    }
+                Parallel.ForEach(testedMethods[type].Tests, testedMethod =>
+                {
+                    RunTestMethod(type, testedMethod);
                 });
+
+                //foreach (var afterClassMethod in testedMethods[type].AfterClassTests)
+                //{
+                //    RunNonTestMethod(afterClassMethod, null);
+                //}
             });
         }
 
@@ -184,11 +179,13 @@ namespace MyNUnit
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.ToString());
                 stopwatch.Stop();
                 var timeElapsed = stopwatch.Elapsed;
                 var testMethodInfo = new TestMethodInfo(method.Name);
-                var passedTest = e.InnerException.GetType() == attribute.ExpectedException;
-                testMethodInfo.SetInfoPassedTest(passedTest, attribute.ExpectedException, e.GetType(), timeElapsed);
+                var innerException = e.InnerException.GetType();
+                var passedTest = innerException == attribute.ExpectedException;
+                testMethodInfo.SetInfoPassedTest(passedTest, attribute.ExpectedException, innerException, timeElapsed);
                 testsResults[type].Enqueue(testMethodInfo);
             }
 
