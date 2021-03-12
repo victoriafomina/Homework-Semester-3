@@ -9,6 +9,8 @@ namespace MyNUnitWeb.Models
 
         public DbSet<TestViewModel> Tests { get; set; }
 
+        public DbSet<AssemblyViewModel> TestLaunchesHistory { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=TestsRunHistory;Trusted_Connection=True;");
