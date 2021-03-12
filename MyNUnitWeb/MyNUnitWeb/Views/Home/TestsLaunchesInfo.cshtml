@@ -11,13 +11,12 @@
     <meta name="viewport" content="width=device-width" />
 </head>
 <body>
-    <h2>Tests</h2>
     <form asp-controller="Home" asp-action="RunTests">
         <p>
-            <input type="submit" value="Run" />
+            <input class="btn btn-dark" type="submit" value="Run tests" />
         </p>
     </form>
-        <table>
+        <table class="table table-striped table-dark">
             <tbody>
                 @foreach (var test in Model.Tests)
                 {
@@ -32,24 +31,24 @@
                     }
                     else if (test.Passed)
                     {
-                    <tr>
-                        <td>Name: @test.Name</td>
-                        <td>Class name: @test.ClassName</td>
-                        <td>Passed</td>
-                        <td>Elapsed time: @test.ElapsedTime</td>
-                        <td>Launch time: @test.TestLaunchTime</td>
-                    </tr>
+                        <tr>
+                            <td>Name: @test.Name</td>
+                            <td>Class name: @test.ClassName</td>
+                            <td>Passed</td>
+                            <td>Elapsed time: @test.ElapsedTime</td>
+                            <td>Launch time: @test.TestLaunchTime</td>
+                        </tr>
                     }
                     else
                     {
-                    <tr>
-                        <td>Name: @test.Name</td>
-                        <td>Class name: @test.ClassName</td>
-                        <td>Failed</td>
-                        <td>Elapsed time: @test.ElapsedTime</td>
-                        <td>Launch time: @test.TestLaunchTime</td>
-                        <td></td>
-                    </tr>
+                        <tr>
+                            <td>Name: @test.Name</td>
+                            <td>Class name: @test.ClassName</td>
+                            <td>Failed</td>
+                            <td>Elapsed time: @test.ElapsedTime</td>
+                            <td>Launch time: @test.TestLaunchTime</td>
+                            <td></td>
+                        </tr>
                     }
                 }
             </tbody>

@@ -55,11 +55,17 @@ namespace MyNUnitWeb.Controllers
             var assembliesContainingTheirClasses = testRunner.GetAssembliesWithTheirClasses(pathToFolderWithTests);
 
             var assemblies = assembliesContainingTheirClasses.Keys;
+            var testsInAssembly = new ConcurrentBag<TestViewModel>();
 
             foreach (var assembly in assemblies)
             {
                 var classes = assembliesContainingTheirClasses[assembly];
-                var testsInAssembly = new ConcurrentBag<TestViewModel>();
+                testsInAssembly.Clear();
+
+                var assemblyViewModel = new AssemblyViewModel
+                {
+                    Name = assembly,
+                };
 
                 foreach (var someClass in classes)
                 {
@@ -81,16 +87,11 @@ namespace MyNUnitWeb.Controllers
                         testsInAssembly.Add(test);
                         testsToRender.Tests.Add(test);
                         repository.Tests.Add(test);
+                        assemblyViewModel.Tests.Add(test);
                     }
                 }
 
                 var assemblyInstance = repository.Assemblies.FirstOrDefault(x => x.Name == assembly);
-
-                var assemblyViewModel = new AssemblyViewModel
-                {
-                    Name = assembly,
-                    Tests = testsInAssembly.ToList(),
-                };
 
                 repository.TestLaunchesHistory.Add(assemblyViewModel);
 
@@ -108,7 +109,7 @@ namespace MyNUnitWeb.Controllers
         /// <summary>
         /// Loads page with test run history.
         /// </summary>
-        public IActionResult TestsLaunchesHistory() => View("TestsLaunchesHistory", repository.Assemblies.ToList());
+        public IActionResult TestsLaunchesHistory() => View("TestsLaunchesHistory", repository.TestLaunchesHistory.ToList());
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

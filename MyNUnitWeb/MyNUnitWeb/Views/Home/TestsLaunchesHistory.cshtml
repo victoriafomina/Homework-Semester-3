@@ -10,16 +10,7 @@
 <head>
     <meta name="viewport" content="width=device-width" />
 </head>
-<body>
-    <div>
-        <table>
-            @foreach (var assembly in Model)
-            {
-                <tr>
-                    <td>@assembly.Name</td>
-                </tr>
-            }
-        </table>
+    <body>
         <div>
             <table>
                 <thead>
@@ -33,12 +24,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var assembly in Model)
-                    {
-                        foreach (var test in assembly.Tests)
+                    @{foreach (var assembly in Model)
                         {
-                            if (test.Passed)
-                            {
+                            @*<tr>
+                                <th>@assembly.Name</th>
+                            </tr>*@
+
+                    foreach (var test in assembly.Tests)
+                    {
+                        if (test.Passed)
+                        {
                                 <tr>
                                     <th scope="row">@test.Name</th>
                                     <td>@test.ClassName</td>
@@ -47,9 +42,9 @@
                                     <td>True</td>
                                     <td>@test.Passed</td>
                                 </tr>
-                            }
-                            else if (test.Ignored)
-                            {
+                        }
+                        else if (test.Ignored)
+                        {
                                 <tr>
                                     <th scope="row">@test.Name</th>
                                     <td>@test.ClassName</td>
@@ -58,9 +53,9 @@
                                     <td>@test.Ignored</td>
                                     <td>False</td>
                                 </tr>
-                            }
-                            else
-                            {
+                        }
+                        else
+                        {
                                 <tr>
                                     <th scope="row">@test.Name</th>
                                     <td>@test.ClassName</td>
@@ -69,12 +64,12 @@
                                     <td>True</td>
                                     <td>@test.Passed</td>
                                 </tr>
+                                }
                             }
                         }
                     }
                 </tbody>
             </table>
         </div>
-    </div>
-</body>
+    </body>
 </html>
