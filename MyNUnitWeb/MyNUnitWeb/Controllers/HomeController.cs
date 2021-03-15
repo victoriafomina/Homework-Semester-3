@@ -1,40 +1,44 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using MyNUnitWeb.Models;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using MyNUnit;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace MyNUnitWeb.Controllers
 {
+    /// <summary>
+    /// Controller class.
+    /// </summary>
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-        private readonly IWebHostEnvironment environment;
         private Repository repository;
         private MyNUnit.MyNUnit testRunner;
         private readonly string pathToFolderWithTests = Directory.GetCurrentDirectory() + "\\Tests";
 
-        public HomeController(ILogger<HomeController> logger, IWebHostEnvironment environment, Repository repository)
+        /// <summary>
+        /// Initializes an instance of home conroller class.
+        /// </summary>
+        public HomeController(Repository repository)
         {
-            _logger = logger;
             this.repository = repository;
-            this.environment = environment;
             testRunner = new MyNUnit.MyNUnit();
         }
 
+        /// <summary>
+        /// Renders index page.
+        /// </summary>
         public IActionResult Index()
         {
             return View();
         }
 
+        /// <summary>
+        /// Renders privacy page.
+        /// </summary>
         public IActionResult Privacy()
         {
             return View();
@@ -47,6 +51,7 @@ namespace MyNUnitWeb.Controllers
         {
             var classesWithTestMethods = testRunner.Run(pathToFolderWithTests);
             var assembliesContainingTheirClasses = testRunner.GetAssembliesWithTheirClasses(pathToFolderWithTests);
+            var testsToRender = new List<TestViewModel>();
 
             var assemblies = assembliesContainingTheirClasses.Keys;
 
@@ -90,16 +95,41 @@ namespace MyNUnitWeb.Controllers
                         }
 
                         repository.Tests.Add(test);
+                        testsToRender.Add(test);
                     }
                 }
             }
 
             await repository.SaveChangesAsync();
-            return View("TestsLaunchesInfo", repository.Tests.ToList());
+
+            return View("TestsLaunchesInfo", testsToRender);
         }
 
         /// <summary>
-        /// Loads page with the test run history.
+        /// Loads assembly to the server.
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> LoadAssembly(IFormFile file)
+        {
+            if (file != null)
+            {
+                using var stream = new FileStream($"{Path.Combine(pathToFolderWithTests, file.FileName)}", FileMode.Create);
+                await file.CopyToAsync(stream);
+            }
+
+            return View("LoadAssembly");
+        }
+
+        /// <summary>
+        /// Loads an assembly page.
+        /// </summary>
+        public IActionResult LoadAssemblyPage()
+        {
+            return View("LoadAssembly");
+        }
+
+        /// <summary>
+        /// Renders page with the test run history.
         /// </summary>
         public IActionResult TestsLaunchesHistory()
         {
@@ -108,6 +138,9 @@ namespace MyNUnitWeb.Controllers
             return View("TestsLaunchesHistory", testsLaunchesHistory);
         }
 
+        /// <summary>
+        /// Renders an error page.
+        /// </summary>
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

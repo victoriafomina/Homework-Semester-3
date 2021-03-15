@@ -11,9 +11,9 @@
     <meta name="viewport" content="width=device-width" />
 </head>
 <body>
-    <form  style="margin-top: 3rem" asp-controller="Home" asp-action="RunTests">
+    <form style="margin-top: 3rem" asp-controller="Home" asp-action="RunTests">
         <p>
-            <input class="btn btn-dark" type="submit" value="Run tests"/>
+            <input class="btn btn-dark" type="submit" value="Run tests" />
         </p>
     </form>
     <table class="table table-striped table-dark">
@@ -29,13 +29,13 @@
             {
                 if (test.Ignored)
                 {
-            <tr>
-                <td>@test.Name</td>
-                <td>@test.ClassName</td>
-                <td>Ignored</td>
-                <td>@test.IgnoreMessage</td>
-                <td>@test.TestLaunchTime</td>
-            </tr>
+                    <tr>
+                        <td>@test.Name</td>
+                        <td>@test.ClassName</td>
+                        <td>Ignored</td>
+                        <td>@test.IgnoreMessage</td>
+                        <td>@test.TestLaunchTime</td>
+                    </tr>
                 }
                 else if (test.Passed)
                 {

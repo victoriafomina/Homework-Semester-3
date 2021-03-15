@@ -4,13 +4,7 @@
     ViewData["Title"] = "Tests launches history";
 }
 
-<h1 style="margin-top: 5rem;">@ViewData["Title"]</h1>
-
-<style class="table table-striped table-dark">
-    :nth-child(0) {
-        background: #778899;
-    }
-</style>
+<h1 style="margin-bottom: 3rem;">@ViewData["Title"]</h1>
 
 <!DOCTYPE html>
 <html>
@@ -19,63 +13,65 @@
 </head>
 <body>
     <div>
-        <table class="table table-striped table-dark">
-            <thead>
-                <tr>
-                    <th scope="col">Test</th>
-                    <th scope="col">Class name</th>
-                    <th scope="col">Passed/ Ignored</th>
-                    <th scope="col">Elapsed time/ Ignore message</th>
-                    <th scope="col">Launch time</th>
-                </tr>
-            </thead>
-            <tbody>
-                @{foreach (var assembly in Model.Assemblies)
-                    {
+        @{ foreach (var assembly in Model.Assemblies)
+            {
+                <h3 style="margin-top: 2rem;">Assembly: @assembly.Name</h3>
+                <table class="table" style="margin-bottom: 1rem;">
+                    <tr><td>Passed: @Model.Tests.Count(x => x.Assembly.Name == assembly.Name && x.Passed)</td></tr>
+                    <tr><td>Failed: @Model.Tests.Count(x => x.Assembly.Name == assembly.Name && !x.Passed && !x.Ignored)</td></tr>
+                    <tr><td>Ignored: @Model.Tests.Count(x => x.Assembly.Name == assembly.Name && x.Ignored)</td></tr>
+                </table>
+                <table class="table table-striped table-dark">
+                    <thead>
                         <tr>
-                            <th>Assembly: @assembly.Name</th>
+                            <th>Test</th>
+                            <th>Class name</th>
+                            <th>Passed/ Ignored</th>
+                            <th>Elapsed time/ Ignore message</th>
+                            <th>Launch time</th>
                         </tr>
+                    </thead>
+                    <tbody>
+                        @{var testsInAssembly = Model.Tests.FindAll(x => x.Assembly.Name == assembly.Name);
 
-                        var testsInAssembly = Model.Tests.FindAll(x => x.Assembly.Name == assembly.Name);
-
-                        foreach (var test in testsInAssembly)
-                        {
-                            if (test.Passed)
+                            foreach (var test in testsInAssembly)
                             {
-
-                                <tr>
-                                    <th>@test.Name</th>
-                                    <td>@test.ClassName</td>
-                                    <td>True</td>
-                                    <td>@test.ElapsedTime</td>
-                                    <td>@test.TestLaunchTime</td>
-                                </tr>
-                            }
-                            else if (test.Ignored)
-                            {
-                                <tr>
-                                    <th>@test.Name</th>
-                                    <td>@test.ClassName</td>
-                                    <td>Ignored</td>
-                                    <td>@test.IgnoreMessage</td>
-                                    <td>@test.TestLaunchTime</td>
-                                </tr>
-                            }
-                            else
-                            {
-                                <tr>
-                                    <th>@test.Name</th>
-                                    <td>@test.ClassName</td>
-                                    <td>False</td>
-                                    <td>@test.ElapsedTime</td>
-                                    <td>@test.TestLaunchTime</td>
-                                </tr>
+                                if (test.Passed)
+                                {
+                                    <tr>
+                                        <td>@test.Name</td>
+                                        <td>@test.ClassName</td>
+                                        <td>True</td>
+                                        <td>@test.ElapsedTime</td>
+                                        <td>@test.TestLaunchTime</td>
+                                    </tr>
+                                }
+                                else if (test.Ignored)
+                                {
+                                    <tr>
+                                        <td>@test.Name</td>
+                                        <td>@test.ClassName</td>
+                                        <td>Ignored</td>
+                                        <td>@test.IgnoreMessage</td>
+                                        <td>@test.TestLaunchTime</td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <th>@test.Name</th>
+                                        <td>@test.ClassName</td>
+                                        <td>False</td>
+                                        <td>@test.ElapsedTime</td>
+                                        <td>@test.TestLaunchTime</td>
+                                    </tr>
+                                }
                             }
                         }
-                    }
-                }
-            </tbody>
-        </table>
+                    </tbody>
+                </table>
+            }
+        }
     </div>
 </body>
 </html>

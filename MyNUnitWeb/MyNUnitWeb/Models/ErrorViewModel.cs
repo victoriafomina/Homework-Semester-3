@@ -1,5 +1,3 @@
-using System;
-
 namespace MyNUnitWeb.Models
 {
     public class ErrorViewModel
