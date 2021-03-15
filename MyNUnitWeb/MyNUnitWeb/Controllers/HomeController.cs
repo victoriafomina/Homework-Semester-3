@@ -15,8 +15,8 @@ namespace MyNUnitWeb.Controllers
     /// </summary>
     public class HomeController : Controller
     {
-        private Repository repository;
-        private MyNUnit.MyNUnit testRunner;
+        private readonly Repository repository;
+        private readonly MyNUnit.MyNUnit testRunner;
         private readonly string pathToFolderWithTests = Directory.GetCurrentDirectory() + "\\Tests";
 
         /// <summary>
