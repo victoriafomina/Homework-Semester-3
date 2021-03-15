@@ -3,31 +3,39 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - MyNUnitWeb</title>
+    <title>@ViewData["Title"] - Bugs Catcher Web</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
-<body>
+<body background="images/bug.webp">
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">MyNUnitWeb</a>
+                <a href="@Url.Action("Index", "core")" class="navbar-brand">
+                    <img style="width: 20%;" src="favicon.ico" title="core" alt="" />
+                </a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Bugs Catcher Web</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <style class="nav-item">
+                        .li {
+                            padding: 12rem, 0
+                        }
+                    </style>
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
+                        <li>
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li>
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="RunTests">Run tests</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="RunTests">Launch tests</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="TestsLaunchesHistory">Tests launches history</a>
+                        <li>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="TestsLaunchesHistory">Launches history</a>
                         </li>
-                        <li class="nav-item">
+                        <li>
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
@@ -43,7 +51,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2021 - MyNUnitWeb - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2021 - Bugs Catcher Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

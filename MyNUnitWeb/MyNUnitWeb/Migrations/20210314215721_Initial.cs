@@ -28,7 +28,7 @@ namespace MyNUnitWeb.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ClassName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Passed = table.Column<bool>(type: "bit", nullable: true),
+                    Passed = table.Column<bool>(type: "bit", nullable: false),
                     Ignored = table.Column<bool>(type: "bit", nullable: false),
                     IgnoreMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ElapsedTime = table.Column<TimeSpan>(type: "time", nullable: false),

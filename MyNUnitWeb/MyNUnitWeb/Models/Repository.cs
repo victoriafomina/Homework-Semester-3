@@ -5,11 +5,9 @@ namespace MyNUnitWeb.Models
 {
     public class Repository : DbContext
     {
-        public DbSet<AssemblyViewModel> Assemblies { get; set; }
-
         public DbSet<TestViewModel> Tests { get; set; }
 
-        public DbSet<AssemblyViewModel> TestLaunchesHistory { get; set; }
+        public DbSet<AssemblyViewModel> Assemblies { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

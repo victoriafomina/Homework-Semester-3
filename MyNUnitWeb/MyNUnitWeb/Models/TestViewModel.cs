@@ -11,7 +11,6 @@ namespace MyNUnitWeb.Models
         /// <summary>
         /// Id of the test.
         /// </summary>
-        [Key]
         public int Id { get; set; }
 
         /// <summary>
@@ -50,7 +49,7 @@ namespace MyNUnitWeb.Models
         public DateTime TestLaunchTime { get; set; }
 
         /// <summary>
-        /// Assembly that contains the test.
+        /// Name of the assembly that contains the test.
         /// </summary>
         public AssemblyViewModel Assembly { get; set; }
     }

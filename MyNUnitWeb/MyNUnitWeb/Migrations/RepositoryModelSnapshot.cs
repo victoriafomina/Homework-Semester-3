@@ -31,7 +31,7 @@ namespace MyNUnitWeb.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AssemblyViewModel");
+                    b.ToTable("Assemblies");
                 });
 
             modelBuilder.Entity("MyNUnitWeb.Models.TestViewModel", b =>

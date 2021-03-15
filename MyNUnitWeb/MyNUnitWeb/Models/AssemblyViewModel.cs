@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyNUnitWeb.Models
 {
@@ -8,11 +9,8 @@ namespace MyNUnitWeb.Models
     /// </summary>
     public class AssemblyViewModel
     {
-        public AssemblyViewModel() => Tests = new List<TestViewModel>();
-
         /// Id of the assembly.
         /// </summary>
-        [Key]
         public int Id { get; set; }
 
         /// <summary>
@@ -23,6 +21,6 @@ namespace MyNUnitWeb.Models
         /// <summary>
         /// Tests contained in the assembly.
         /// </summary>
-        public List<TestViewModel> Tests { get; set; }
+        public ICollection<TestViewModel> Tests { get; set; } = new List<TestViewModel>();
     }
 }

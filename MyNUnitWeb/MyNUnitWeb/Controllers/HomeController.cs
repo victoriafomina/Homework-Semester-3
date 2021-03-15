@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using MyNUnit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using System.Collections.Concurrent;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyNUnitWeb.Controllers
 {
@@ -20,7 +20,6 @@ namespace MyNUnitWeb.Controllers
         private readonly IWebHostEnvironment environment;
         private Repository repository;
         private MyNUnit.MyNUnit testRunner;
-        private TestsViewModel testsToRender;
         private readonly string pathToFolderWithTests = Directory.GetCurrentDirectory() + "\\Tests";
 
         public HomeController(ILogger<HomeController> logger, IWebHostEnvironment environment, Repository repository)
@@ -29,7 +28,6 @@ namespace MyNUnitWeb.Controllers
             this.repository = repository;
             this.environment = environment;
             testRunner = new MyNUnit.MyNUnit();
-            testsToRender = new TestsViewModel();
         }
 
         public IActionResult Index()
@@ -47,25 +45,14 @@ namespace MyNUnitWeb.Controllers
         /// </summary>
         public async Task<IActionResult> RunTests()
         {
-            repository.Tests.RemoveRange(repository.Tests);
-            repository.Assemblies.RemoveRange(repository.Assemblies);
-            repository.SaveChanges();
-
             var classesWithTestMethods = testRunner.Run(pathToFolderWithTests);
             var assembliesContainingTheirClasses = testRunner.GetAssembliesWithTheirClasses(pathToFolderWithTests);
 
             var assemblies = assembliesContainingTheirClasses.Keys;
-            var testsInAssembly = new ConcurrentBag<TestViewModel>();
 
-            foreach (var assembly in assemblies)
+            foreach (var assemblyFullPath in assemblies)
             {
-                var classes = assembliesContainingTheirClasses[assembly];
-                testsInAssembly.Clear();
-
-                var assemblyViewModel = new AssemblyViewModel
-                {
-                    Name = assembly,
-                };
+                var classes = assembliesContainingTheirClasses[assemblyFullPath];
 
                 foreach (var someClass in classes)
                 {
@@ -84,32 +71,42 @@ namespace MyNUnitWeb.Controllers
                             ClassName = someClass.ToString(),
                         };
 
-                        testsInAssembly.Add(test);
-                        testsToRender.Tests.Add(test);
+                        var assemblyName = Path.GetFileName(assemblyFullPath);
+                        var assemblyEntity = repository.Assemblies.FirstOrDefault(x => x.Name == assemblyName);
+
+                        if (assemblyEntity == null)
+                        {
+                            var assemblyViewModel = new AssemblyViewModel
+                            {
+                                Name = assemblyName,
+                            };
+
+                            test.Assembly = assemblyViewModel;
+                            repository.Add(assemblyViewModel);
+                        }
+                        else
+                        {
+                            test.Assembly = assemblyEntity;
+                        }
+
                         repository.Tests.Add(test);
-                        assemblyViewModel.Tests.Add(test);
                     }
-                }
-
-                var assemblyInstance = repository.Assemblies.FirstOrDefault(x => x.Name == assembly);
-
-                repository.TestLaunchesHistory.Add(assemblyViewModel);
-
-                if (assemblyInstance == null)
-                {
-                    repository.Assemblies.Add(assemblyViewModel);
                 }
             }
 
             await repository.SaveChangesAsync();
-
-            return View("TestsLaunchesInfo", testsToRender);
+            return View("TestsLaunchesInfo", repository.Tests.ToList());
         }
 
         /// <summary>
-        /// Loads page with test run history.
+        /// Loads page with the test run history.
         /// </summary>
-        public IActionResult TestsLaunchesHistory() => View("TestsLaunchesHistory", repository.TestLaunchesHistory.ToList());
+        public IActionResult TestsLaunchesHistory()
+        {
+            var testsLaunchesHistory = new TestsLaunchesHistoryViewModel { Tests = repository.Tests.ToList(), Assemblies = repository.Assemblies.ToList() };
+
+            return View("TestsLaunchesHistory", testsLaunchesHistory);
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

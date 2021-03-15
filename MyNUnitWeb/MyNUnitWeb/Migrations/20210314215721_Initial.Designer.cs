@@ -10,7 +10,7 @@ using MyNUnitWeb.Models;
 namespace MyNUnitWeb.Migrations
 {
     [DbContext(typeof(Repository))]
-    [Migration("20210311170426_Initial")]
+    [Migration("20210314215721_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,7 +61,7 @@ namespace MyNUnitWeb.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool?>("Passed")
+                    b.Property<bool>("Passed")
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("TestLaunchTime")
