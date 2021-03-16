@@ -36,7 +36,7 @@ namespace GUIForFTP
         /// </summary>
         public string DownloadPath { get; set; }
 
-        private ObservableCollection<(string, bool)> currentPathsOnServer;
+        private ObservableCollection<(string, bool)> currentElementsFromServer;
 
         private ObservableCollection<string> currentPathsOnClient;
 
@@ -52,9 +52,6 @@ namespace GUIForFTP
         /// </summary>
         public ObservableCollection<string> DownloadsInfo { get; private set; }
 
-        /// <summary>
-        /// Delegate needed to show errors.
-        /// </summary>
         public delegate void ShowErrorMessage(object sender, string message);
 
         /// <summary>
@@ -148,8 +145,6 @@ namespace GUIForFTP
         {
             currentPathsOnClient = new ObservableCollection<string>();
 
-            currentPathsOnClient.CollectionChanged += CurrentPathsOnClientChanged;
-
             try
             {
                 TryUpdateCurrentPathsOnClient("");
@@ -187,30 +182,11 @@ namespace GUIForFTP
 
         private async Task InitializeCurrentPathsOnServer()
         {
-            currentPathsOnServer = new ObservableCollection<(string, bool)>();
+            currentElementsFromServer = new ObservableCollection<(string, bool)>();
 
-            currentPathsOnServer.CollectionChanged += CurrentPathsOnServerChanged;
+            currentElementsFromServer.CollectionChanged += CurrentPathsOnServerChanged;
 
-            await TryUpdateCurrentPathsOnServer(rootServerPath);
-        }
-
-        private void CurrentPathsOnClientChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (e.OldItems != null)
-            {
-                foreach (var item in e.OldItems)
-                {
-                    ElementsInfo.Remove(item.ToString());
-                }
-            }
-
-            if (e.NewItems != null)
-            {
-                foreach (var item in e.NewItems)
-                {
-                    ElementsInfo.Add(item.ToString());
-                }
-            }
+            await GetElementsInFolderFromServer(rootServerPath);
         }
 
         private void CurrentPathsOnServerChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -234,7 +210,7 @@ namespace GUIForFTP
 
         private bool IsFile(string folderName)
         {
-            foreach (var path in currentPathsOnServer)
+            foreach (var path in currentElementsFromServer)
             {
                 if (path.Item1 == folderName)
                 {
@@ -248,37 +224,43 @@ namespace GUIForFTP
         /// <summary>
         /// Opens the folder or downloads the file when the user clicks on ListView item in GUI.
         /// </summary>
-        public async Task OpenServerFolderOrDownloadFile(string folderName)
+        public async Task OpenServerFolderOrDownloadFile(string elementName)
         {
-            if (IsFile(folderName))
+            if (IsFile(elementName))
             {
-                await DownloadFile(folderName);
+                if (File.Exists(DownloadPath + elementName))
+                {
+                    await DownloadFile(elementName);
+                }
 
                 return;
             }
 
             if (PathTracker.Path == "")
             {
-                await TryUpdateCurrentPathsOnServer(folderName);
-                PathTracker.Down(folderName);
+                await GetElementsInFolderFromServer(elementName);
+                PathTracker.Down(elementName);
             }
             else
             {
-                PathTracker.Down(folderName);
-                await TryUpdateCurrentPathsOnServer(PathTracker.Path);
+                PathTracker.Down(elementName);
+                await GetElementsInFolderFromServer(PathTracker.Path);
             }
         }
 
+        /// <summary>
+        /// Tries to get elements containing in the folder from the server.
+        /// </summary>
         /// <param name="openedFolder">Opened folder.</param>
-        private async Task TryUpdateCurrentPathsOnServer(string openedFolder)
+        private async Task GetElementsInFolderFromServer(string openedFolder)
         {
             try
             {
                 var serverList = await client.List(openedFolder);
 
-                while (currentPathsOnServer.Count > 0)
+                while (currentElementsFromServer.Count > 0)
                 {
-                    currentPathsOnServer.RemoveAt(currentPathsOnServer.Count - 1);
+                    currentElementsFromServer.RemoveAt(currentElementsFromServer.Count - 1);
                 }
 
                 foreach (var path in serverList)
@@ -287,7 +269,7 @@ namespace GUIForFTP
 
                     name = name.Substring(name.LastIndexOf('\\') + 1);
 
-                    currentPathsOnServer.Add((name, path.Item2));
+                    currentElementsFromServer.Add((name, path.Item2));
                 }
 
                 сurrentDirectoryOnServer = openedFolder;
@@ -318,8 +300,6 @@ namespace GUIForFTP
             try
             {
                 PathTracker.Up();
-
-                //TryUpdateCurrentPathsOnClient(PathTracker.Path);
                 currentDirectoryOnClientPath = Directory.GetParent(currentDirectoryOnClientPath).ToString();
             }
             catch (Exception e)
@@ -328,6 +308,9 @@ namespace GUIForFTP
             }
         }
 
+        /// <summary>
+        /// Goes one folder upper.
+        /// </summary>
         public async Task FolderUpServer()
         {
             if (PathTracker.Path == "")
@@ -342,11 +325,11 @@ namespace GUIForFTP
 
                 if (PathTracker.Path == "")
                 {
-                    await TryUpdateCurrentPathsOnServer("current");
+                    await GetElementsInFolderFromServer(rootServerPath);
                 }
                 else
                 {
-                    await TryUpdateCurrentPathsOnServer(PathTracker.Path);
+                    await GetElementsInFolderFromServer(PathTracker.Path);
                 }                
             }
             catch (Exception e)
@@ -370,11 +353,18 @@ namespace GUIForFTP
             {
                 var pathToFile = Path.Combine(сurrentDirectoryOnServer, fileName);
 
-                DownloadsInfo.Add($"Downloading: {fileName}");
+                if (File.Exists(DownloadPath + fileName))
+                {
+                    ThrowError(this, "File already exists in the directory!");
+                }
+                else
+                {
+                    DownloadsInfo.Add($"Downloading: {fileName}");
 
-                await client.Get(pathToFile, DownloadPath);
+                    await client.Get(pathToFile, DownloadPath);
 
-                DownloadsInfo.Add($"Downloaded: {fileName}");
+                    DownloadsInfo.Add($"Downloaded: {fileName}");
+                }
             }
             catch (Exception e)
             {
@@ -389,7 +379,7 @@ namespace GUIForFTP
         {
             try
             {
-                foreach (var path in currentPathsOnServer)
+                foreach (var path in currentElementsFromServer)
                 {
                     if (!path.Item2)
                     {
