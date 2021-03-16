@@ -31,7 +31,7 @@ namespace SimpleFTPServer
             var root = Path.GetFullPath("..\\..\\..\\..\\");
             root = root.Remove(root.Length - 1);
 
-            if (parsedRequest.Item2.ToLower() == "current")
+            if (parsedRequest.Item2.ToLower() == "1current")
             {
                 Console.WriteLine($"Root: {root}");
                 await List(root, root.Length, writer);

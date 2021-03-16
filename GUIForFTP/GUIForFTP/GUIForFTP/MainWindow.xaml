@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:GUIForFTP"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
 
@@ -108,7 +107,7 @@
                 <ListView x:Name="elementsInFolder" ItemsSource="{Binding DisplayedListOnServer}">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
-                            <EventSetter Event="MouseDoubleClick" Handler="HandleServerDoubleClick"/>
+                            <EventSetter Event="MouseDoubleClick" Handler="HandleServerDouble_Click"/>
                         </Style>
                     </ListView.ItemContainerStyle>
                 </ListView>
@@ -126,7 +125,7 @@
         <ScrollViewer>
             <ListView 
                 x:Name="downloadsInfo" 
-                ItemsSource="{Binding ClientViewModel.DownloadsInfo}" 
+                ItemsSource="{Binding DownloadsInfo}" 
                 Height="115" 
                 Margin="10, 0, 5 , 0">
             </ListView>

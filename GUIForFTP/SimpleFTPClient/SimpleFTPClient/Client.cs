@@ -96,14 +96,13 @@ namespace SimpleFTPClient
                 throw new ClientNotRunningException();
             }
 
-            var formattedDownloadFrom = downloadFrom.Substring(2);
-            var temp = formattedDownloadFrom.Split('\\');
+            var temp = downloadFrom.Split('\\');
             var fileName = temp[temp.Length - 1];
 
             var writer = new StreamWriter(client.GetStream()) { AutoFlush = true };
             var reader = new StreamReader(client.GetStream());
 
-            await writer.WriteLineAsync("2" + formattedDownloadFrom);
+            await writer.WriteLineAsync("2" + downloadFrom);
 
             var response = await reader.ReadLineAsync();
 
@@ -114,8 +113,10 @@ namespace SimpleFTPClient
                 throw new FileNotFoundException("File was not found on the server!");
             }
 
-            var fileStream = new FileStream(downloadTo + fileName, FileMode.OpenOrCreate);
-            await reader.BaseStream.CopyToAsync(fileStream);
+            using (var fileStream = new StreamWriter(new FileStream(downloadTo + fileName, FileMode.OpenOrCreate)))
+            {
+                await fileStream.WriteAsync(response);
+            } 
         }
 
         /// <summary>

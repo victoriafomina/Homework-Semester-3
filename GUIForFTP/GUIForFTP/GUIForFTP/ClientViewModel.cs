@@ -23,29 +23,15 @@ namespace GUIForFTP
         /// </summary>
         public bool IsConnected = false;
 
+        private string rootServerPath = "1current";
+
         public string RootClientDirectoryPath;
 
         private string currentDirectoryOnClientPath;
 
         private string сurrentDirectoryOnServer;
 
-        private string currentDirectoryOnClient;
-
         private string downloadPath;
-
-        public string DownloadFolder
-        {
-            get
-            {
-                var tmp = downloadPath.Remove(downloadPath.Length - 1);
-                return tmp.Substring(tmp.LastIndexOf('\\') + 1);
-            }
-            set
-            {
-                downloadPath = value;
-                NotifyPropertyChanged();
-            }
-        }
 
         private ObservableCollection<(string, bool)> currentPathsOnServer;
 
@@ -55,9 +41,7 @@ namespace GUIForFTP
 
         public ObservableCollection<string> ElementsInfo { get; private set; }
 
-        public ObservableCollection<string> DownloadsInProgressList { get; private set; }
-
-        public ObservableCollection<string> DownloadsFinishedList { get; private set; }
+        public ObservableCollection<string> DownloadsInfo { get; private set; }
 
         public delegate void ShowErrorMessage(object sender, string message);
 
@@ -94,27 +78,26 @@ namespace GUIForFTP
         /// <summary>
         /// Initializes an instance of the ClientViewModel.
         /// </summary>
-        public ClientViewModel(string rootClientDirectory)
+        public ClientViewModel(string rootDirectory)
         {
             server = "127.0.0.1";
             port = 6666;
-            RootClientDirectoryPath = rootClientDirectory;
-            сurrentDirectoryOnServer = "current";
+            RootClientDirectoryPath = rootDirectory;
+            сurrentDirectoryOnServer = rootServerPath;
 
             currentDirectoryOnClientPath = RootClientDirectoryPath;
-            currentDirectoryOnClient = "";
             downloadPath = RootClientDirectoryPath;
 
             DisplayedListOnServer = new ObservableCollection<string>();
             ElementsInfo = new ObservableCollection<string>();
-            DownloadsInProgressList = new ObservableCollection<string>();
-            DownloadsFinishedList = new ObservableCollection<string>();
+            DownloadsInfo = new ObservableCollection<string>();
 
             InitializeCurrentPathsOnClient();
         }
 
+
         protected virtual void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-           => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         /// <summary>
         /// Connects the client to the server.
@@ -150,7 +133,7 @@ namespace GUIForFTP
 
             try
             {
-                TryUpdateCurrentPathsOnClient("");
+                //TryUpdateCurrentPathsOnClient("");
             }
             catch (Exception e)
             {
@@ -164,7 +147,7 @@ namespace GUIForFTP
 
             currentPathsOnServer.CollectionChanged += CurrentPathsOnServerChanged;
 
-            await TryUpdateCurrentPathsOnServer("current");
+            await TryUpdateCurrentPathsOnServer(rootServerPath);
         }
 
         private void CurrentPathsOnClientChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -205,23 +188,6 @@ namespace GUIForFTP
             }
         }
 
-        public void OpenClientFolder(string folderName)
-        {
-            var nextDirectoryPath = Path.Combine(currentDirectoryOnClientPath, folderName);
-
-            if (Directory.Exists(nextDirectoryPath))
-            {
-                var nextDirectoryOnClient = Path.Combine(currentDirectoryOnClient, folderName);
-                TryUpdateCurrentPathsOnClient(nextDirectoryOnClient);
-                currentDirectoryOnClientPath = nextDirectoryPath;
-                currentDirectoryOnClient = Path.Combine(currentDirectoryOnClient, folderName);
-            }
-            else
-            {
-                ThrowError(this, "Directory not found");
-            }
-        }
-
         private bool IsFile(string folderName)
         {
             foreach (var path in currentPathsOnServer)
@@ -247,45 +213,15 @@ namespace GUIForFTP
                 return;
             }
 
-            string nextDirectory;
-
             if (PathTracker.Path == "")
             {
-                nextDirectory = folderName;
+                await TryUpdateCurrentPathsOnServer(folderName);
                 PathTracker.Down(folderName);
             }
             else
             {
                 PathTracker.Down(folderName);
-                nextDirectory = PathTracker.Path;
-            }
-
-            await TryUpdateCurrentPathsOnServer(nextDirectory);
-        }
-        
-        /// <param name="folderPath">Opened folder.</param>
-        private void TryUpdateCurrentPathsOnClient(string folderPath)
-        {
-            try
-            {
-                var dirToOpen = Path.Combine(RootClientDirectoryPath, folderPath);
-
-                var folders = Directory.EnumerateDirectories(dirToOpen);
-
-                while (currentPathsOnClient.Count > 0)
-                {
-                    currentPathsOnClient.RemoveAt(currentPathsOnClient.Count - 1);
-                }
-
-                foreach (var folder in folders)
-                {
-                    var name = folder.Substring(folder.LastIndexOf('\\') + 1);
-                    currentPathsOnClient.Add(name);
-                }
-            }
-            catch (Exception e)
-            {
-                ThrowError(this, e.Message);
+                await TryUpdateCurrentPathsOnServer(PathTracker.Path);
             }
         }
 
@@ -329,28 +265,17 @@ namespace GUIForFTP
         /// </summary>
         public void FolderUp()
         {
-            if (currentDirectoryOnClient == "")
+            if (PathTracker.Balance == 0)
             {
-                ThrowError(this, "Can't go back from the root directory");
+                ThrowError(this, "Can not go upper than the root directory!");
                 return;
             }
 
             try
             {
-                var index = currentDirectoryOnClient.LastIndexOf('\\');
-                string toOpen;
+                PathTracker.Up();
 
-                if (index > 0)
-                {
-                    toOpen = currentDirectoryOnClient.Substring(0, currentDirectoryOnClient.LastIndexOf('\\'));
-                }
-                else
-                {
-                    toOpen = "";
-                }
-
-                TryUpdateCurrentPathsOnClient(toOpen);
-                currentDirectoryOnClient = toOpen;
+                //TryUpdateCurrentPathsOnClient(PathTracker.Path);
                 currentDirectoryOnClientPath = Directory.GetParent(currentDirectoryOnClientPath).ToString();
             }
             catch (Exception e)
@@ -359,14 +284,11 @@ namespace GUIForFTP
             }
         }
 
-        /// <summary>
-        /// Возвращение назад на сервере
-        /// </summary>
-        public async Task GoBackServer()
+        public async Task FolderUpServer()
         {
             if (PathTracker.Path == "")
             {
-                ThrowError(this, "Can't go back from the root directory");
+                ThrowError(this, "Can not go upper than the root directory!");
                 return;
             }
 
@@ -387,7 +309,7 @@ namespace GUIForFTP
             {
                 if (e.Message == "-1")
                 {
-                    ThrowError(this, "Directory not found exception occured");
+                    ThrowError(this, "Directory not found!");
                     return;
                 }
 
@@ -395,28 +317,20 @@ namespace GUIForFTP
             }
         }
 
-        public void UpdateDownloadFolder()
-        {
-            if (downloadPath == currentDirectoryOnClientPath)
-            {
-                return;
-            }
-
-            DownloadFolder = currentDirectoryOnClientPath + "\\";
-        }
-
+        /// <summary>
+        /// Downloads a file.
+        /// </summary>
         public async Task DownloadFile(string fileName)
         {
             try
             {
                 var pathToFile = Path.Combine(сurrentDirectoryOnServer, fileName);
 
-                DownloadsInProgressList.Add(fileName);
+                DownloadsInfo.Add($"Downloading: {fileName}");
 
                 await client.Get(pathToFile, downloadPath);
 
-                DownloadsInProgressList.Remove(fileName);
-                DownloadsFinishedList.Add(fileName);
+                DownloadsInfo.Add($"Downloaded: {fileName}");
             }
             catch (Exception e)
             {
@@ -424,7 +338,10 @@ namespace GUIForFTP
             }
         }
 
-        public async Task DownloadAllFilesInCurrentDirectory()
+        /// <summary>
+        /// Downloads all files in curr
+        /// </summary>
+        public async Task DownloadAllFiles()
         {
             try
             {
