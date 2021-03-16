@@ -33,7 +33,6 @@ namespace SimpleFTPServer
 
             if (parsedRequest.Item2.ToLower() == "current")
             {
-                Console.WriteLine($"Root: {root}");
                 await List(root, root.Length, writer);
 
                 return;
@@ -103,8 +102,6 @@ namespace SimpleFTPServer
         /// </summary>
         private static async Task Get(string path, StreamWriter writer)
         {
-            Console.WriteLine($"Path: {path}");
-
             if (!File.Exists(path))
             {
                 await writer.WriteLineAsync("-1");
@@ -112,7 +109,6 @@ namespace SimpleFTPServer
             }
 
             var size = new FileInfo(path).Length;
-            Console.WriteLine($"Size: {size}");
             await writer.WriteLineAsync($"{size} ");
 
             using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite))
