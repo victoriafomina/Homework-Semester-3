@@ -31,7 +31,10 @@ namespace GUIForFTP
 
         private string сurrentDirectoryOnServer;
 
-        private string downloadPath;
+        /// <summary>
+        /// Path to download to.
+        /// </summary>
+        public string DownloadPath { get; set; }
 
         private ObservableCollection<(string, bool)> currentPathsOnServer;
 
@@ -49,6 +52,9 @@ namespace GUIForFTP
         /// </summary>
         public ObservableCollection<string> DownloadsInfo { get; private set; }
 
+        /// <summary>
+        /// Delegate needed to show errors.
+        /// </summary>
         public delegate void ShowErrorMessage(object sender, string message);
 
         /// <summary>
@@ -99,7 +105,7 @@ namespace GUIForFTP
             сurrentDirectoryOnServer = rootServerPath;
 
             currentDirectoryOnClientPath = RootClientDirectoryPath;
-            downloadPath = RootClientDirectoryPath;
+            DownloadPath = RootClientDirectoryPath;
 
             ElementsInFolder = new ObservableCollection<string>();
             ElementsInfo = new ObservableCollection<string>();
@@ -366,7 +372,7 @@ namespace GUIForFTP
 
                 DownloadsInfo.Add($"Downloading: {fileName}");
 
-                await client.Get(pathToFile, downloadPath);
+                await client.Get(pathToFile, DownloadPath);
 
                 DownloadsInfo.Add($"Downloaded: {fileName}");
             }

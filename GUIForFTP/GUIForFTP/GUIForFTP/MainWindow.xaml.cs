@@ -31,8 +31,8 @@ namespace GUIForFTP
 
         private async void FolderUp_Click(object sender, RoutedEventArgs e) => await model.FolderUpServer();
 
-        private void addressTextBox_TextChanged(object sender, TextChangedEventArgs e) => model.IsConnected = false;
+        private void AddressTextBox_TextChanged(object sender, TextChangedEventArgs e) => model.IsConnected = false;
 
-        private void portTextBox_TextChanged(object sender, TextChangedEventArgs e) => model.IsConnected = false;
+        private void PortTextBox_TextChanged(object sender, TextChangedEventArgs e) => model.IsConnected = false;
     }
 }
