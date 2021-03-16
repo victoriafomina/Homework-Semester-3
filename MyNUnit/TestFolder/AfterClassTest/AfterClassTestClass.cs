@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using MyNUnit.Attributes;
 
 namespace AfterClassTest
@@ -8,7 +9,7 @@ namespace AfterClassTest
         private static int count = 0;
 
         [AfterClass]
-        public void AfterClassTest()
+        public static void AfterClassTest()
         {
             if (count != 2)
             {
@@ -19,13 +20,13 @@ namespace AfterClassTest
         [Test]
         public void TestMethod1()
         {
-            ++count;
+            Interlocked.Increment(ref count);
         }
 
         [Test]
         public void TestMethod2()
         {
-            ++count;
+            Interlocked.Increment(ref count);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using MyNUnit.Attributes;
 using System;
+using System.Threading;
 
 namespace BeforeClassTest
 {
@@ -8,9 +9,9 @@ namespace BeforeClassTest
         private static int count = 0;
 
         [BeforeClass]
-        public void BeforeClassMethod()
+        public static void BeforeClassMethod()
         {
-            ++count;
+            Interlocked.Increment(ref count);
         }
 
         [Test]
