@@ -26,16 +26,6 @@ namespace MyNUnit
         private ConcurrentDictionary<Type, MyNUnitLogic> testedMethods;
 
         /// <summary>
-        /// Before class methods.
-        /// </summary>
-        public List<MethodInfo> beforeClassMethods;
-
-        /// <summary>
-        /// After class methods.
-        /// </summary>
-        public List<MethodInfo> afterClassMethods;
-
-        /// <summary>
         /// Runs tests.
         /// </summary>
         /// <returns>the result of test running</returns>
@@ -43,8 +33,6 @@ namespace MyNUnit
         {
             testsResults = new ConcurrentDictionary<Type, ConcurrentQueue<TestMethodInfo>>();
             testedMethods = new ConcurrentDictionary<Type, MyNUnitLogic>();
-            beforeClassMethods = new List<MethodInfo>();
-            afterClassMethods = new List<MethodInfo>();
             RunTestsByPath(path);
 
             return GetReportAboutTests();
@@ -120,7 +108,6 @@ namespace MyNUnit
 
                 foreach (var beforeClassMethod in testedMethods[type].BeforeClassTests)
                 {
-                    beforeClassMethods.Add(beforeClassMethod);
                     RunNonTestMethod(beforeClassMethod, null);
                 }
 
@@ -131,7 +118,6 @@ namespace MyNUnit
 
                 foreach (var afterClassMethod in testedMethods[type].AfterClassTests)
                 {
-                    afterClassMethods.Add(afterClassMethod);
                     RunNonTestMethod(afterClassMethod, null);
                 }
             });

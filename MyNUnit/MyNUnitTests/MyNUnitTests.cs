@@ -84,26 +84,5 @@ namespace MyNUnitTests
 
             Assert.AreEqual(2, count);
         }
-
-        [TestMethod]
-        public void BeforeClassTest()
-        {
-            testRunner.Run($"{basePath}BeforeClassTest\\Assembly");
-            Assert.AreEqual(1, testRunner.beforeClassMethods.Count);
-            Assert.AreEqual("BeforeClassTestMethod", testRunner.beforeClassMethods[0].Name);
-        }
-
-        [TestMethod]
-        public void AfterClassTests()
-        {
-            testRunner.Run($"{basePath}AfterTestsClass\\Assembly");
-            Assert.AreEqual(2, testRunner.afterClassMethods.Count);
-            
-            var method1 = testRunner.afterClassMethods[0].Name;
-            var method2 = testRunner.afterClassMethods[1].Name;
-
-            Assert.IsTrue(method1 == "AfterTestMethod1" || method1 == "AfterTestMethod2");
-            Assert.IsTrue(method2 == "AfterTestMethod1" || method2 == "AfterTestMethod2");
-        }
     }
 }
