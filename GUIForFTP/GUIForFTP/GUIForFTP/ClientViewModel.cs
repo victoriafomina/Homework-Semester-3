@@ -45,8 +45,6 @@ namespace GUIForFTP
         /// </summary>
         public ObservableCollection<string> ElementsInFolder { get; private set; }
 
-        public ObservableCollection<string> ElementsInfo { get; private set; }
-
         /// <summary>
         /// Stores the downloads information.
         /// </summary>
@@ -105,7 +103,6 @@ namespace GUIForFTP
             DownloadPath = RootClientDirectoryPath;
 
             ElementsInFolder = new ObservableCollection<string>();
-            ElementsInfo = new ObservableCollection<string>();
             DownloadsInfo = new ObservableCollection<string>();
 
             InitializeCurrentPathsOnClient();
@@ -229,6 +226,10 @@ namespace GUIForFTP
             if (IsFile(elementName))
             {
                 if (File.Exists(DownloadPath + elementName))
+                {
+                    ThrowError(this, "File already exists in the directory!");
+                }
+                else
                 {
                     await DownloadFile(elementName);
                 }
