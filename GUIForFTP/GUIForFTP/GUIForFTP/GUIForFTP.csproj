@@ -84,6 +84,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ClientViewModel.cs" />
+    <Compile Include="MyCommand.cs" />
     <Compile Include="CouldNotAccessDirUpperThanRootException.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

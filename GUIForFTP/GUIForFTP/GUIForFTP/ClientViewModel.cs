@@ -18,10 +18,20 @@ namespace GUIForFTP
         private string server;
         private Client client;
 
+        private MyCommand connectCommand;
+        public MyCommand ConnectCommand
+        {
+            get
+            {
+                return connectCommand ??
+                  (connectCommand = new MyCommand(async obj => await Connect(), obj => Uri.CheckHostName(Server) != UriHostNameType.Unknown));
+            }
+        }
+
         /// <summary>
         /// Indicates if the client is connected to the server.
         /// </summary>
-        private bool IsConnected = false;
+        public bool IsConnected { get; set; } = false;
 
         private string rootServerPath = "1current";
 

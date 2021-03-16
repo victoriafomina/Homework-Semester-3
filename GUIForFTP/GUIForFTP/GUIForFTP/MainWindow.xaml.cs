@@ -25,7 +25,7 @@ namespace GUIForFTP
 
         private void ShowMessage(string errorMessage) =>  MessageBox.Show(errorMessage, "Error message");
 
-        private async void Connect_Click(object sender, RoutedEventArgs e) => await model.Connect();
+        // private async void Connect_Click(object sender, RoutedEventArgs e) => await model.Connect();
 
         private async void DownloadAll_Click(object sender, RoutedEventArgs e) => await model.DownloadAllFiles();
 
