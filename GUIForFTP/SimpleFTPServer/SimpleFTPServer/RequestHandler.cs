@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -32,6 +33,7 @@ namespace SimpleFTPServer
 
             if (parsedRequest.Item2.ToLower() == "current")
             {
+                Console.WriteLine($"Root: {root}");
                 await List(root, root.Length, writer);
 
                 return;

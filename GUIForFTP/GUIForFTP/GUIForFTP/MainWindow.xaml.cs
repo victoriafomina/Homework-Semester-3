@@ -2,7 +2,9 @@
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using SimpleFTPClient;
 
 namespace GUIForFTP
 {
@@ -11,100 +13,66 @@ namespace GUIForFTP
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly ClientViewModel clientViewModel;
-        private readonly string portOrHostNameAreIncorrect = "Port and/or hostname are incorrect!";
+        private ClientViewModel model;
 
         public MainWindow()
         {
+            model = new ClientViewModel("..\\..\\..\\Client\\res\\Downloads\\");
+
+            model.ThrowError += (sender, message) => ShowMessage(message);
+
+            DataContext = model;
+
             InitializeComponent();
-            clientViewModel = new ClientViewModel();
-            elementsInFolder.ItemsSource = clientViewModel.ElementsInFolder;
-            downloadsInfo.ItemsSource = clientViewModel.DownloadsInfo;
-            InitFillFilesAndFoldersListView();
+        }
+        private async void HandleServerDoubleClick(object sender, RoutedEventArgs e)
+        {
+            await model.OpenServerFolderOrDownloadFile((sender as ListViewItem).Content.ToString());
         }
 
-        private bool CheckServerAndPortCorectness() =>
-                Uri.CheckHostName(server.Text) != UriHostNameType.Unknown && int.TryParse(port.Text, out _);
+        private void HandleClientDoubleClick(object sender, RoutedEventArgs e)
+        {
+            model.OpenClientFolder((sender as ListViewItem).Content.ToString());
+        }
+
+        private void ShowMessage(string errorMessage)
+        {
+            MessageBox.Show(errorMessage, "Error occured");
+        }
+
+        private async void Connect_Click(object sender, RoutedEventArgs e)
+        {
+            await model.Connect();
+        }
+
+        private async void DownloadAll_Click(object sender, RoutedEventArgs e)
+        {
+            await model.DownloadAllFilesInCurrentDirectory();
+        }
 
         private async void FolderUp_Click(object sender, RoutedEventArgs e)
-        {   if (CheckServerAndPortCorectness())
-            {
-                try
-                {
-                    await clientViewModel.GetListOfFilesAndFoldersFromDirectoryAsync(Direction.Up, "", server.Text, int.Parse(port.Text));
-                }
-                catch (CouldNotAccessDirUpperThanRootException)
-                {
-                    MessageBox.Show("You don't have an access to upper directories!");
-                }
-
-                return;
-             }
-
-             MessageBox.Show(portOrHostNameAreIncorrect);
-        }
-
-        private async void ElementsInFolder_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var item = ((FrameworkElement)e.OriginalSource).DataContext as ListViewElementModel;
-
-            var isCorrectServerAndPort = CheckServerAndPortCorectness();
-
-            if (isCorrectServerAndPort && item.IsDirectory)
-            {
-                await clientViewModel.GetListOfFilesAndFoldersFromDirectoryAsync(Direction.Down, item.Path, server.Text, int.Parse(port.Text));
-            }
-            else if (isCorrectServerAndPort && Directory.Exists(downloadTo.Text))
-            {
-                await DownloadFileAsync(item);
-            }
-            else
-            { 
-                if (!isCorrectServerAndPort)
-                {
-                    MessageBox.Show(portOrHostNameAreIncorrect);
-                }
-
-                if (!Directory.Exists(downloadTo.Text))
-                {
-                    MessageBox.Show("Directory you want to download to does not exist!");
-                }
-            }    
+            await model.GoBackServer();
         }
 
-        private async void SaveAllFilesInFolder_Click(object sender, RoutedEventArgs e)
+        private void BackClient_Click(object sender, RoutedEventArgs e)
         {
-            if (CheckServerAndPortCorectness())
-            {
-                foreach (var file in clientViewModel.ElementsInFolder)
-                {
-                    if (!file.IsDirectory)
-                    {
-                        await DownloadFileAsync(file);
-                    }
-                }
-
-                return;
-            }
-
-            MessageBox.Show(portOrHostNameAreIncorrect);
+            model.FolderUp();
         }
 
-        private async Task DownloadFileAsync (ListViewElementModel file)
+        private void ChooseFolder_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                clientViewModel.DownloadsInfo.Add($"Trying to start downloading \"{file.Path}\"");
-                await clientViewModel.DownloadFileFromServer(file.Path, downloadTo.Text);
-                clientViewModel.DownloadsInfo.Add($"\"{file.Path}\" downloaded");
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message);
-            }            
+            model.UpdateDownloadFolder();
         }
 
-        private async void InitFillFilesAndFoldersListView() =>
-                await clientViewModel.GetListOfFilesAndFoldersFromDirectoryAsync(Direction.Current, "", "127.0.0.1", 6666);
+        private void addressTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            model.IsConnected = false;
+        }
+
+        private void portTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            model.IsConnected = false;
+        }
     }
 }

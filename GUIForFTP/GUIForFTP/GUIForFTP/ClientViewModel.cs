@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using System.Windows;
-using Meziantou.Framework.WPF.Collections;
 using SimpleFTPClient;
 
 namespace GUIForFTP
@@ -11,112 +12,434 @@ namespace GUIForFTP
     /// <summary>
     /// The class implements view model logic for a client.
     /// </summary>
-    public class ClientViewModel : IDisposable
+    public class ClientViewModel : INotifyPropertyChanged
     {
-        private readonly Client client;
-        private readonly string serverRootDir = "current";
+        private int port;
+        private string server;
+        private Client client;
+
+        /// <summary>
+        /// Indicates if the client is connected to the server.
+        /// </summary>
+        public bool IsConnected = false;
+
+        public string RootClientDirectoryPath;
+
+        private string currentDirectoryOnClientPath;
+
+        private string сurrentDirectoryOnServer;
+
+        private string currentDirectoryOnClient;
+
+        private string downloadPath;
+
+        public string DownloadFolder
+        {
+            get
+            {
+                var tmp = downloadPath.Remove(downloadPath.Length - 1);
+                return tmp.Substring(tmp.LastIndexOf('\\') + 1);
+            }
+            set
+            {
+                downloadPath = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        private ObservableCollection<(string, bool)> currentPathsOnServer;
+
+        private ObservableCollection<string> currentPathsOnClient;
+
+        public ObservableCollection<string> DisplayedListOnServer { get; private set; }
+
+        public ObservableCollection<string> ElementsInfo { get; private set; }
+
+        public ObservableCollection<string> DownloadsInProgressList { get; private set; }
+
+        public ObservableCollection<string> DownloadsFinishedList { get; private set; }
+
+        public delegate void ShowErrorMessage(object sender, string message);
+
+        public event ShowErrorMessage ThrowError = (_, __) => { };
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>
+        /// Port.
+        /// </summary>
+        public string Port
+        {
+            get
+            {
+                IsConnected = false;
+                return port.ToString();
+            }
+            set
+            {
+                IsConnected = false;
+                port = Convert.ToInt32(value);
+            }
+        }
+
+        /// <summary>
+        /// Server address.
+        /// </summary>
+        public string Server
+        {
+            get => server;
+            set => server = value;
+        }
 
         /// <summary>
         /// Initializes an instance of the ClientViewModel.
         /// </summary>
-        public ClientViewModel()
+        public ClientViewModel(string rootClientDirectory)
         {
-            ElementsInFolder = new ObservableCollection<ListViewElementModel>();
-            DownloadsInfo = new ConcurrentObservableCollection<string>();
-            client = new Client();
+            server = "127.0.0.1";
+            port = 6666;
+            RootClientDirectoryPath = rootClientDirectory;
+            сurrentDirectoryOnServer = "current";
+
+            currentDirectoryOnClientPath = RootClientDirectoryPath;
+            currentDirectoryOnClient = "";
+            downloadPath = RootClientDirectoryPath;
+
+            DisplayedListOnServer = new ObservableCollection<string>();
+            ElementsInfo = new ObservableCollection<string>();
+            DownloadsInProgressList = new ObservableCollection<string>();
+            DownloadsFinishedList = new ObservableCollection<string>();
+
+            InitializeCurrentPathsOnClient();
         }
 
-        /// <summary>
-        /// Gets files and folders from the one-step upper directory.
-        /// </summary>
-        public async Task GetListOfFilesAndFoldersFromDirectoryAsync(Direction direction, string dir, string server, int port)
-        {
-            client.Run(server, port);
-            List<(string, bool)> result;
+        protected virtual void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+           => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-            if (Direction.Current == direction)
+        /// <summary>
+        /// Connects the client to the server.
+        /// </summary>
+        public async Task Connect()
+        {
+            if (IsConnected)
             {
-                MessageBox.Show($"Balance: {PathTracker.Balance}, Path: {PathTracker.Path}, Direction: {direction}" +
-                        $"Directory: {dir}");
-                result = await client.List(serverRootDir);
-                FillWithFilesAndFolders(result);
+                return;
             }
-            else if (Direction.Down == direction)
+
+            client = new Client();
+
+            DisplayedListOnServer.Clear();
+
+            try
             {
-                PathTracker.Down(dir);
-                var path = PathTracker.Path;
-                MessageBox.Show($"Balance: {PathTracker.Balance}, Path: {PathTracker.Path}, Direction: {direction}" +
-                        $"Directory: {dir}");
-                result = await client.List($"{path}");
-                FillWithFilesAndFolders(result);
+                client.Run(server, port);
+                await InitializeCurrentPathsOnServer();
+                IsConnected = true;
             }
-            else if (PathTracker.Balance == 1)
+            catch (Exception e)
             {
-                PathTracker.Up();
-                MessageBox.Show($"Balance: {PathTracker.Balance}, Path: {PathTracker.Path}, Direction: {direction}" +
-                        $"Directory: {dir}");
-                result = await client.List(serverRootDir);
-                FillWithFilesAndFolders(result);
+                ThrowError(this, e.Message);
             }
-            else if (PathTracker.Balance > 0)
+        }
+
+        private void InitializeCurrentPathsOnClient()
+        {
+            currentPathsOnClient = new ObservableCollection<string>();
+
+            currentPathsOnClient.CollectionChanged += CurrentPathsOnClientChanged;
+
+            try
             {
-                PathTracker.Up();
-                var path = PathTracker.Path;
-                MessageBox.Show($"Balance: {PathTracker.Balance}, Path: {PathTracker.Path}, Direction: {direction}" +
-                        $"Directory: {dir}");
-                result = await client.List($"{path}");
-                FillWithFilesAndFolders(result);
+                TryUpdateCurrentPathsOnClient("");
+            }
+            catch (Exception e)
+            {
+                ThrowError(this, e.Message);
+            }
+        }
+
+        private async Task InitializeCurrentPathsOnServer()
+        {
+            currentPathsOnServer = new ObservableCollection<(string, bool)>();
+
+            currentPathsOnServer.CollectionChanged += CurrentPathsOnServerChanged;
+
+            await TryUpdateCurrentPathsOnServer("current");
+        }
+
+        private void CurrentPathsOnClientChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.OldItems != null)
+            {
+                foreach (var item in e.OldItems)
+                {
+                    ElementsInfo.Remove(item.ToString());
+                }
+            }
+
+            if (e.NewItems != null)
+            {
+                foreach (var item in e.NewItems)
+                {
+                    ElementsInfo.Add(item.ToString());
+                }
+            }
+        }
+
+        private void CurrentPathsOnServerChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.OldItems != null)
+            {
+                foreach ((string, bool) pair in e.OldItems)
+                {
+                    DisplayedListOnServer.Remove(pair.Item1);
+                }
+            }
+
+            if (e.NewItems != null)
+            {
+                foreach ((string, bool) pair in e.NewItems)
+                {
+                    DisplayedListOnServer.Add(pair.Item1);
+                }
+            }
+        }
+
+        public void OpenClientFolder(string folderName)
+        {
+            var nextDirectoryPath = Path.Combine(currentDirectoryOnClientPath, folderName);
+
+            if (Directory.Exists(nextDirectoryPath))
+            {
+                var nextDirectoryOnClient = Path.Combine(currentDirectoryOnClient, folderName);
+                TryUpdateCurrentPathsOnClient(nextDirectoryOnClient);
+                currentDirectoryOnClientPath = nextDirectoryPath;
+                currentDirectoryOnClient = Path.Combine(currentDirectoryOnClient, folderName);
             }
             else
             {
-                MessageBox.Show($"Balance: {PathTracker.Balance}, Path: {PathTracker.Path}, Direction: {direction}" +
-                        $"Directory: {dir}");
-                throw new CouldNotAccessDirUpperThanRootException();
+                ThrowError(this, "Directory not found");
             }
         }
 
-        /// <summary>
-        /// Downloads a file from server.
-        /// </summary>
-        public async Task DownloadFileFromServer(string downloadFrom, string downloadTo) =>
-                await client.Get(downloadFrom, downloadTo);
-
-        /// <summary>
-        /// Returns a collection that is binded with a ListView that shows files and folders in directory.
-        /// </summary>
-        public ObservableCollection<ListViewElementModel> ElementsInFolder { get; private set; }
-
-        /// <summary>
-        /// Returns a collection that is binded with a ListView that shows downloads information.
-        /// </summary>
-        public ConcurrentObservableCollection<string> DownloadsInfo { get; private set; }
-
-        /// <summary>
-        /// Disposes of resourses.
-        /// </summary>
-        public void Dispose() => client.Dispose();
-
-        /// <summary>
-        /// Fills ObservableCollection with the files and folders.
-        /// </summary>
-        private void FillWithFilesAndFolders(List<(string, bool)> elements)
+        private bool IsFile(string folderName)
         {
-            ElementsInFolder.Clear();
-
-            foreach (var element in elements)
+            foreach (var path in currentPathsOnServer)
             {
-                ElementsInFolder.Add(new ListViewElementModel(element));
+                if (path.Item1 == folderName)
+                {
+                    return !path.Item2;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Opens the folder or downloads the file when the user clicks on ListView item in GUI.
+        /// </summary>
+        public async Task OpenServerFolderOrDownloadFile(string folderName)
+        {
+            if (IsFile(folderName))
+            {
+                await DownloadFile(folderName);
+
+                return;
+            }
+
+            string nextDirectory;
+
+            if (PathTracker.Path == "")
+            {
+                nextDirectory = folderName;
+                PathTracker.Down(folderName);
+            }
+            else
+            {
+                PathTracker.Down(folderName);
+                nextDirectory = PathTracker.Path;
+            }
+
+            await TryUpdateCurrentPathsOnServer(nextDirectory);
+        }
+        
+        /// <param name="folderPath">Opened folder.</param>
+        private void TryUpdateCurrentPathsOnClient(string folderPath)
+        {
+            try
+            {
+                var dirToOpen = Path.Combine(RootClientDirectoryPath, folderPath);
+
+                var folders = Directory.EnumerateDirectories(dirToOpen);
+
+                while (currentPathsOnClient.Count > 0)
+                {
+                    currentPathsOnClient.RemoveAt(currentPathsOnClient.Count - 1);
+                }
+
+                foreach (var folder in folders)
+                {
+                    var name = folder.Substring(folder.LastIndexOf('\\') + 1);
+                    currentPathsOnClient.Add(name);
+                }
+            }
+            catch (Exception e)
+            {
+                ThrowError(this, e.Message);
             }
         }
-    }
 
-    /// <summary>
-    /// Contains three possible directions in the folder tracking.
-    /// </summary>
-    public enum Direction
-    {
-        Up,
-        Down,
-        Current
+        /// <param name="openedFolder">Opened folder.</param>
+        private async Task TryUpdateCurrentPathsOnServer(string openedFolder)
+        {
+            try
+            {
+                var serverList = await client.List(openedFolder);
+
+                while (currentPathsOnServer.Count > 0)
+                {
+                    currentPathsOnServer.RemoveAt(currentPathsOnServer.Count - 1);
+                }
+
+                foreach (var path in serverList)
+                {
+                    var name = path.Item1;
+
+                    name = name.Substring(name.LastIndexOf('\\') + 1);
+
+                    currentPathsOnServer.Add((name, path.Item2));
+                }
+
+                сurrentDirectoryOnServer = openedFolder;
+            }
+            catch (Exception e)
+            {
+                if (e.Message == "-1")
+                {
+                    ThrowError(this, "Directory not found exception occured");
+                    return;
+                }
+
+                ThrowError(this, e.Message);
+            }
+        }
+
+        /// <summary>
+        /// Goes one folder upper.
+        /// </summary>
+        public void FolderUp()
+        {
+            if (currentDirectoryOnClient == "")
+            {
+                ThrowError(this, "Can't go back from the root directory");
+                return;
+            }
+
+            try
+            {
+                var index = currentDirectoryOnClient.LastIndexOf('\\');
+                string toOpen;
+
+                if (index > 0)
+                {
+                    toOpen = currentDirectoryOnClient.Substring(0, currentDirectoryOnClient.LastIndexOf('\\'));
+                }
+                else
+                {
+                    toOpen = "";
+                }
+
+                TryUpdateCurrentPathsOnClient(toOpen);
+                currentDirectoryOnClient = toOpen;
+                currentDirectoryOnClientPath = Directory.GetParent(currentDirectoryOnClientPath).ToString();
+            }
+            catch (Exception e)
+            {
+                ThrowError(this, e.Message);
+            }
+        }
+
+        /// <summary>
+        /// Возвращение назад на сервере
+        /// </summary>
+        public async Task GoBackServer()
+        {
+            if (PathTracker.Path == "")
+            {
+                ThrowError(this, "Can't go back from the root directory");
+                return;
+            }
+
+            try
+            {
+                PathTracker.Up();
+
+                if (PathTracker.Path == "")
+                {
+                    await TryUpdateCurrentPathsOnServer("current");
+                }
+                else
+                {
+                    await TryUpdateCurrentPathsOnServer(PathTracker.Path);
+                }                
+            }
+            catch (Exception e)
+            {
+                if (e.Message == "-1")
+                {
+                    ThrowError(this, "Directory not found exception occured");
+                    return;
+                }
+
+                ThrowError(this, e.Message);
+            }
+        }
+
+        public void UpdateDownloadFolder()
+        {
+            if (downloadPath == currentDirectoryOnClientPath)
+            {
+                return;
+            }
+
+            DownloadFolder = currentDirectoryOnClientPath + "\\";
+        }
+
+        public async Task DownloadFile(string fileName)
+        {
+            try
+            {
+                var pathToFile = Path.Combine(сurrentDirectoryOnServer, fileName);
+
+                DownloadsInProgressList.Add(fileName);
+
+                await client.Get(pathToFile, downloadPath);
+
+                DownloadsInProgressList.Remove(fileName);
+                DownloadsFinishedList.Add(fileName);
+            }
+            catch (Exception e)
+            {
+                ThrowError(this, e.Message);
+            }
+        }
+
+        public async Task DownloadAllFilesInCurrentDirectory()
+        {
+            try
+            {
+                foreach (var path in currentPathsOnServer)
+                {
+                    if (!path.Item2)
+                    {
+                        await DownloadFile(path.Item1);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                ThrowError(this, e.Message);
+            }
+        }
     }
 }

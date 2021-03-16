@@ -37,7 +37,15 @@ namespace SimpleFTPClient
             var writer = new StreamWriter(client.GetStream()) { AutoFlush = true };
             var reader = new StreamReader(client.GetStream());
 
-            await writer.WriteLineAsync("1" + path);
+            if (path.ToLower() == "1current")
+            {
+                await writer.WriteLineAsync(path);
+            }
+            else
+            {
+                await writer.WriteLineAsync("1" + path);
+            }
+
             var response = await reader.ReadLineAsync();
 
             if (response == "denied")

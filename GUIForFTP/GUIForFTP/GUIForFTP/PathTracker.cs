@@ -18,6 +18,26 @@
         public static string Path { get; private set; } = "";
 
         /// <summary>
+        /// Returns current folder.
+        /// </summary>
+        public static string CurrentFolder
+        {
+            get
+            {
+                if (Balance <= 1)
+                {
+                    return Path;
+                }
+                else
+                {
+                    var lastSlashIndex = Path.IndexOf("\\");
+
+                    return Path.Substring(0, Path.Length - lastSlashIndex - 1);
+                }
+            }
+        }
+
+        /// <summary>
         /// Goes one-folder upper.
         /// </summary>
         public static void Up()
@@ -46,7 +66,12 @@
         /// </summary>
         public static void Down(string dirName)
         {
-            Path = dirName.Substring(2);
+            if (Balance > 0)
+            {
+                Path += "\\";
+            }
+
+            Path += dirName;
             ++Balance;
         }
     }
