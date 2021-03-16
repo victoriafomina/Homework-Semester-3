@@ -37,16 +37,28 @@ namespace GUIForFTP
 
         private ObservableCollection<string> currentPathsOnClient;
 
-        public ObservableCollection<string> DisplayedListOnServer { get; private set; }
+        /// <summary>
+        /// Stores the information abo
+        /// </summary>
+        public ObservableCollection<string> ElementsInFolder { get; private set; }
 
         public ObservableCollection<string> ElementsInfo { get; private set; }
 
+        /// <summary>
+        /// Stores the downloads information.
+        /// </summary>
         public ObservableCollection<string> DownloadsInfo { get; private set; }
 
         public delegate void ShowErrorMessage(object sender, string message);
 
+        /// <summary>
+        /// Event needed to show errors.
+        /// </summary>
         public event ShowErrorMessage ThrowError = (_, __) => { };
 
+        /// <summary>
+        /// Event needed to look for properties changes.
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
@@ -57,6 +69,7 @@ namespace GUIForFTP
             get
             {
                 IsConnected = false;
+
                 return port.ToString();
             }
             set
@@ -88,7 +101,7 @@ namespace GUIForFTP
             currentDirectoryOnClientPath = RootClientDirectoryPath;
             downloadPath = RootClientDirectoryPath;
 
-            DisplayedListOnServer = new ObservableCollection<string>();
+            ElementsInFolder = new ObservableCollection<string>();
             ElementsInfo = new ObservableCollection<string>();
             DownloadsInfo = new ObservableCollection<string>();
 
@@ -111,11 +124,11 @@ namespace GUIForFTP
 
             client = new Client();
 
-            DisplayedListOnServer.Clear();
+            ElementsInFolder.Clear();
 
             try
             {
-                client.Run(server, port);
+                await Task.Run(() => client.Run(server, port));
                 await InitializeCurrentPathsOnServer();
                 IsConnected = true;
             }
@@ -133,7 +146,32 @@ namespace GUIForFTP
 
             try
             {
-                //TryUpdateCurrentPathsOnClient("");
+                TryUpdateCurrentPathsOnClient("");
+            }
+            catch (Exception e)
+            {
+                ThrowError(this, e.Message);
+            }
+        }
+
+        private void TryUpdateCurrentPathsOnClient(string folderPath)
+        {
+            try
+            {
+                var dirToOpen = Path.Combine(RootClientDirectoryPath, folderPath);
+
+                var folders = Directory.EnumerateDirectories(dirToOpen);
+
+                while (currentPathsOnClient.Count > 0)
+                {
+                    currentPathsOnClient.RemoveAt(currentPathsOnClient.Count - 1);
+                }
+
+                foreach (var folder in folders)
+                {
+                    var name = folder.Substring(folder.LastIndexOf('\\') + 1);
+                    currentPathsOnClient.Add(name);
+                }
             }
             catch (Exception e)
             {
@@ -175,7 +213,7 @@ namespace GUIForFTP
             {
                 foreach ((string, bool) pair in e.OldItems)
                 {
-                    DisplayedListOnServer.Remove(pair.Item1);
+                    ElementsInFolder.Remove(pair.Item1);
                 }
             }
 
@@ -183,7 +221,7 @@ namespace GUIForFTP
             {
                 foreach ((string, bool) pair in e.NewItems)
                 {
-                    DisplayedListOnServer.Add(pair.Item1);
+                    ElementsInFolder.Add(pair.Item1);
                 }
             }
         }

@@ -104,10 +104,10 @@
                 <TextBlock Text="Save all" />
             </Button>
             <ScrollViewer Grid.Column="1">
-                <ListView x:Name="elementsInFolder" ItemsSource="{Binding DisplayedListOnServer}">
+                <ListView x:Name="elementsInFolder" ItemsSource="{Binding ElementsInFolder}">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
-                            <EventSetter Event="MouseDoubleClick" Handler="HandleServerDouble_Click"/>
+                            <EventSetter Event="MouseDoubleClick" Handler="HandleDouble_Click"/>
                         </Style>
                     </ListView.ItemContainerStyle>
                 </ListView>

@@ -20,7 +20,7 @@ namespace GUIForFTP
             InitializeComponent();
         }
 
-        private async void HandleServerDouble_Click(object sender, RoutedEventArgs e) =>
+        private async void HandleDouble_Click(object sender, RoutedEventArgs e) =>
                 await model.OpenServerFolderOrDownloadFile((sender as ListViewItem).Content.ToString());
 
         private void ShowMessage(string errorMessage) =>  MessageBox.Show(errorMessage, "Error message");
