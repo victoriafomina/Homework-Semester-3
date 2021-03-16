@@ -6,11 +6,11 @@
     public static class PathTracker
     {
         /// <summary>
-        /// Returns balance value of a directory.
-        /// 0 - balance of a root server directory.
-        /// The greater balance the bigger nesting level of folders.
+        /// Returns nesting level of the directory.
+        /// 0 - balance of the root server directory.
+        /// The greater value the bigger nesting level of folders.
         /// </summary>
-        public static int Balance { get; private set; } = 0;
+        public static int NestingLevel { get; private set; } = 0;
 
         /// <summary>
         /// Returns path of a current directory the user observing on a server.
@@ -24,7 +24,7 @@
         {
             get
             {
-                if (Balance <= 1)
+                if (NestingLevel <= 1)
                 {
                     return Path;
                 }
@@ -42,18 +42,18 @@
         /// </summary>
         public static void Up()
         {
-            if (Balance == 1)
+            if (NestingLevel == 1)
             {
                 Path = "";
-                --Balance;
+                --NestingLevel;
 
                 return;
             }
-            else if (Balance > 0)
+            else if (NestingLevel > 0)
             {
                 var index = Path.LastIndexOf("\\");
                 Path = Path.Remove(index);
-                --Balance;
+                --NestingLevel;
 
                 return;
             }
@@ -66,13 +66,13 @@
         /// </summary>
         public static void Down(string dirName)
         {
-            if (Balance > 0)
+            if (NestingLevel > 0)
             {
                 Path += "\\";
             }
 
             Path += dirName;
-            ++Balance;
+            ++NestingLevel;
         }
     }
 }

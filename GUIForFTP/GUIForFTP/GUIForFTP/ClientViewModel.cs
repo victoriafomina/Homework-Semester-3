@@ -291,7 +291,7 @@ namespace GUIForFTP
         /// </summary>
         public void FolderUp()
         {
-            if (PathTracker.Balance == 0)
+            if (PathTracker.NestingLevel == 0)
             {
                 ThrowError(this, "Can not go upper than the root directory!");
                 return;
