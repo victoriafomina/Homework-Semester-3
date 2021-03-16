@@ -21,11 +21,11 @@ namespace GUIForFTP
         /// <summary>
         /// Indicates if the client is connected to the server.
         /// </summary>
-        public bool IsConnected = false;
+        private bool IsConnected = false;
 
         private string rootServerPath = "1current";
 
-        public string RootClientDirectoryPath;
+        private string RootClientDirectoryPath;
 
         private string currentDirectoryOnClientPath;
 
