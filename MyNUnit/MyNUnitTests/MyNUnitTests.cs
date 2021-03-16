@@ -84,5 +84,21 @@ namespace MyNUnitTests
 
             Assert.AreEqual(2, count);
         }
+
+        [TestMethod]
+        public void BeforeClassTest()
+        {
+            var testInfo = testRunner.Run($"{basePath}BeforeClassTest\\Assembly");
+            var testMethodInfo = testInfo.Values;
+            Assert.IsTrue(testMethodInfo.Count == 1);
+        }
+
+        [TestMethod]
+        public void AfterClassTest()
+        {
+            var testInfo = testRunner.Run($"{basePath}AfterClassTest\\Assembly");
+            var testMethodInfo = testInfo.Values;
+            Assert.IsTrue(testMethodInfo.Count == 1);
+        }
     }
 }
