@@ -1,0 +1,20 @@
+﻿@{
+    ViewData["Title"] = "Load assembly";
+}
+<h1 style="margin-bottom: 3rem;">@ViewData["Title"]</h1>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+</head>
+
+<body>
+    <div class="row">
+        <form asp-controller="Home" asp-action="LoadAssembly" method="post" enctype="multipart/form-data">
+            <input class="btn btn-dark" type="file" name="file" style="margin-right: 2rem;" accept=".dll" />
+            <input class="btn btn-dark" type="submit" value="Upload" />
+        </form>
+    </div>
+</body>
+</html>
